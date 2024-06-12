@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+
+
+	<h1>The inventory sequence</h1>
+	<p>table size</p>
+	<p id="table-size">0</p>
+	<button id="next">Next</button>
+	<div id="main">
+	</div>
+
+
+<!--===========================================================================================================-->
+<style>
+
+p{
+	margin: 0;
+}
+
+h2{
+	margin: 0;
+}
+
+.item{
+	margin: 0 2px;
+}
+
+
+</style>
+<!--===========================================================================================================-->
+<script>
+
+const next_button = document.getElementById("next")
+const main_div = document.getElementById("main")
+const table_size_p = document.getElementById("table-size")
+
+class Item{
+	constructor(amount, number, step){
+		this.amount =	amount
+		this.number =	number
+		this.step =		step	//This is just for organization
+	}
+}
+
+
+
+
+function create_sequence_row(array_of_items){
+	const main_body = document.createElement("div")
+	main_body.className = "flex"
+
+	for (let i = 0; i < array_of_items.length; i++) {
+		const item = array_of_items[i];
+		const item_container_div = document.createElement("div")
+		item_container_div.className = "flex align-end item"
+
+		const amount_p = document.createElement("h2")
+		amount_p.textContent = item.amount
+		item_container_div.appendChild(amount_p)
+
+		const number_p = document.createElement("p")
+		number_p.textContent = item.number
+		item_container_div.appendChild(number_p)
+
+		main_body.appendChild(item_container_div)
+	}
+	return main_body
+}
+
+
+
+
+function amount_in_table(array, value){
+	let amount = 0
+	for (let i = 0; i < array.length; i++) {
+		const element = array[i];
+		if(element.amount === value){
+			amount++
+		}
+	}
+	return amount
+}
+
+
+
+
+let table = []
+let step = 0
+
+next_button.addEventListener("click", function(){
+	let i = 0
+	let table_this_sequence = []
+	while(i < 100000){//Just in case
+
+		let amount = amount_in_table(table, i)
+
+		table.push(new Item(amount, i, step))
+		table_this_sequence.push(new Item(amount, i, step))
+		if(amount === 0){
+			break
+		}
+		i++
+	}
+
+	step++
+
+	console.log(Array.from(table))
+	main_div.appendChild(create_sequence_row(table_this_sequence))
+	table_size_p.textContent = table.length
+})
+
+
+</script>
+</body>
+</html>
