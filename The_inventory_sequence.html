@@ -13,6 +13,7 @@
 	<h1>The inventory sequence</h1>
 	<p>table size</p>
 	<p id="table-size">0</p>
+	<button id="step">Step</button>
 	<button id="next">Next</button>
 	<div id="main">
 	</div>
@@ -33,11 +34,19 @@ h2{
 	margin: 0 2px;
 }
 
+#main{
+	width: min-content;
+	min-width: 360px;
+	min-height: 200px;
+	background-color: rgb(44, 49, 71);
+}
+
 
 </style>
 <!--===========================================================================================================-->
 <script>
 
+const step_button = document.getElementById("step")
 const next_button = document.getElementById("next")
 const main_div = document.getElementById("main")
 const table_size_p = document.getElementById("table-size")
@@ -53,26 +62,29 @@ class Item{
 
 
 
-function create_sequence_row(array_of_items){
+function create_sequence_row(){
 	const main_body = document.createElement("div")
 	main_body.className = "flex"
-
-	for (let i = 0; i < array_of_items.length; i++) {
-		const item = array_of_items[i];
-		const item_container_div = document.createElement("div")
-		item_container_div.className = "flex align-end item"
-
-		const amount_p = document.createElement("h2")
-		amount_p.textContent = item.amount
-		item_container_div.appendChild(amount_p)
-
-		const number_p = document.createElement("p")
-		number_p.textContent = item.number
-		item_container_div.appendChild(number_p)
-
-		main_body.appendChild(item_container_div)
-	}
 	return main_body
+}
+
+
+
+
+function create_sequence_row_item(item){
+
+	const item_container_div = document.createElement("div")
+	item_container_div.className = "flex align-end item"
+
+	const amount_p = document.createElement("h2")
+	amount_p.textContent = item.amount
+	item_container_div.appendChild(amount_p)
+
+	const number_p = document.createElement("p")
+	number_p.textContent = item.number
+	item_container_div.appendChild(number_p)
+
+	return item_container_div
 }
 
 
@@ -93,27 +105,55 @@ function amount_in_table(array, value){
 
 
 let table = []
-let step = 0
+let inventory = 0
+let number_to_check = 0
+let row = create_sequence_row()
+main_div.appendChild(row)
+
+step_button.addEventListener("click", function(){
+
+	let amount = amount_in_table(table, number_to_check)
+
+	let new_item = new Item(amount, number_to_check, inventory)
+
+	table.push(new_item)
+	row.appendChild(create_sequence_row_item(new_item))
+	
+	table_size_p.textContent = table.length
+
+	if(amount === 0){	
+		row = create_sequence_row()
+		main_div.appendChild(row)
+		number_to_check = 0
+		inventory++
+	}else{
+		number_to_check++
+	}
+	console.log(Array.from(table))
+			
+})
 
 next_button.addEventListener("click", function(){
-	let i = 0
-	let table_this_sequence = []
-	while(i < 100000){//Just in case
 
-		let amount = amount_in_table(table, i)
+	while(number_to_check < 100000){//Just in case
 
-		table.push(new Item(amount, i, step))
-		table_this_sequence.push(new Item(amount, i, step))
+		let amount = amount_in_table(table, number_to_check)
+
+		let new_item = new Item(amount, number_to_check, inventory)
+		table.push(new_item)
+		row.appendChild(create_sequence_row_item(new_item))
 		if(amount === 0){
 			break
 		}
-		i++
+		number_to_check++
 	}
 
-	step++
+	number_to_check = 0
+	inventory++
 
 	console.log(Array.from(table))
-	main_div.appendChild(create_sequence_row(table_this_sequence))
+	row = create_sequence_row()
+	main_div.appendChild(row)
 	table_size_p.textContent = table.length
 })
 
