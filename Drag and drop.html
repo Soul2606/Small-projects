@@ -33,6 +33,17 @@
         <div class="drag-container"></div>
         <div class="drag-container"></div>
     </div>
+    <h3>
+        Maximum one child
+    </h3>
+    <div class="flex">
+        <div class="drag-container single">
+            <div class="draggable flex-center">
+                <p>4</p>
+            </div>
+        </div>
+        <div class="drag-container single"></div>
+    </div>
 </body>
 <style>
 
@@ -50,6 +61,10 @@
     min-width: 30px;
 }
 
+.single{
+    border: solid rgb(0, 255, 242) 2px;
+}
+
 </style>
 <script>
 
@@ -57,6 +72,7 @@
 const drag_containers = document.getElementsByClassName("drag-container")
 const draggable_elements = document.getElementsByClassName("draggable")
 
+let pickup_destination_element
 let drop_destination_element
 let element_being_dragged
 let element_being_dragged_interval_id
@@ -75,6 +91,7 @@ for (let i = 0; i < draggable_elements.length; i++) {
     
     element.addEventListener("mousedown", function(e){
         e.preventDefault()
+        pickup_destination_element = drop_destination_element
         element_being_dragged = this
         element_being_dragged_interval_id = setInterval(move_element, 0, this)
     })
@@ -87,8 +104,12 @@ function move_element(element){
     element.style.pointerEvents = "none"
 
     if(!mouse_down){
-        //Stop and reset
-        drop_destination_element? drop_destination_element.appendChild(element): console.warn("could not drop to: ", drop_destination_element);
+
+        if(drop_destination_element && !(drop_destination_element.classList.contains("single") && drop_destination_element.firstElementChild !== null)){
+            drop_destination_element.appendChild(element)
+        }else{
+            pickup_destination_element.appendChild(element)
+        }
         element.style.position = ""
         element.style.pointerEvents = "auto"
         clearInterval(element_being_dragged_interval_id)
@@ -109,12 +130,10 @@ window.addEventListener("mousemove", function(e){
 
 window.addEventListener("mousedown", function(){
     mouse_down = true
-    console.log(mouse_down)
     })
     
 window.addEventListener("mouseup", function(){
     mouse_down = false
-    console.log(mouse_down)
 })
 
 
