@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Drag and drop</h1>
+    <p>Doesn't work on mobile</p>
+    <div class="flex">
+        <div class="drag-container">
+            <div class="draggable flex-center">
+                <p>0</p>
+            </div>
+        </div>
+        <div class="drag-container">
+            <div class="draggable flex-center">
+                <p>1</p>
+            </div>
+        </div>
+        <div class="drag-container">
+            <div class="draggable flex-center">
+                <p>2</p>
+            </div>
+        </div>
+        <div class="drag-container">
+            <div class="draggable flex-center">
+                <p>3</p>
+            </div>
+        </div>
+        <div class="drag-container"></div>
+        <div class="drag-container"></div>
+    </div>
+</body>
+<style>
+
+
+.drag-container{
+    border: solid white 1px;
+    background-color: darkslateblue;
+    min-height: 30px;
+    min-width: 30px;
+}
+
+.draggable{
+    background-color: gray;
+    min-height: 30px;
+    min-width: 30px;
+}
+
+</style>
+<script>
+
+
+const drag_containers = document.getElementsByClassName("drag-container")
+const draggable_elements = document.getElementsByClassName("draggable")
+
+let drop_destination_element
+let element_being_dragged
+let element_being_dragged_interval_id
+
+for (let i = 0; i < drag_containers.length; i++) {
+    const drag_container = drag_containers[i];
+
+    drag_container.addEventListener("mouseover", function(){
+        drop_destination_element = this
+    })
+    
+}
+
+for (let i = 0; i < draggable_elements.length; i++) {
+    const element = draggable_elements[i];
+    
+    element.addEventListener("mousedown", function(e){
+        e.preventDefault()
+        element_being_dragged = this
+        element_being_dragged_interval_id = setInterval(move_element, 0, this)
+    })
+}
+
+function move_element(element){
+    element.style.position = "fixed"
+    element.style.left = mouse_position.x + "px"
+    element.style.top = mouse_position.y + "px" 
+    element.style.pointerEvents = "none"
+
+    if(!mouse_down){
+        //Stop and reset
+        drop_destination_element? drop_destination_element.appendChild(element): console.warn("could not drop to: ", drop_destination_element);
+        element.style.position = ""
+        element.style.pointerEvents = "auto"
+        clearInterval(element_being_dragged_interval_id)
+        return
+    }
+}
+
+
+
+
+const mouse_position = {x:0,y:0}
+let mouse_down = false
+
+window.addEventListener("mousemove", function(e){
+    mouse_position.x = e.clientX
+    mouse_position.y = e.clientY
+})
+
+window.addEventListener("mousedown", function(){
+    mouse_down = true
+    console.log(mouse_down)
+    })
+    
+window.addEventListener("mouseup", function(){
+    mouse_down = false
+    console.log(mouse_down)
+})
+
+
+</script>
+</html>

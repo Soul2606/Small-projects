@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <table id="table">
+        <tbody>
+            <tr id="table-header">
+                <th class="number">#</th>
+            </tr>
+        </tbody>
+    </table>
+</body>
+<style>
+</style>
+<script>
+
+
+const table_body = document.getElementById("table").firstElementChild
+const table_header_row = document.getElementById("table-header")
+
+const max = 100
+
+
+for (let i = 1; i <= max; i++) {
+
+    const table_row = document.createElement("tr")
+    table_body.appendChild(table_row)
+
+    const first_item = document.createElement("td")
+    first_item.className = "number"
+    first_item.textContent = i
+    table_row.appendChild(first_item)
+
+    const table_header_item = document.createElement("th")
+    table_header_item.className = "number"
+    table_header_item.textContent = i
+    table_header_row.appendChild(table_header_item)
+    
+    for(let j=1; j<=max; j++){
+        const item = document.createElement("td")
+        item.className = "number"
+        item.textContent = i * j
+        table_row.appendChild(item)
+    }
+}
+
+
+</script>
+</html>
