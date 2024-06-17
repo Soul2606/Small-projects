@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<h1>Economy</h1>
+	<button id="button">Next</button>
+
+	<div class="flex">
+		<h3>Population</h3>
+		<h3>10^</h3>
+		<h3 id="population"></h3>
+	</div>
+
+	<div class="resources-list">	
+		<p class="resources-list-name">organics</p>
+		<p class="resources-list-amount" id="organics">0</p>
+		<div style="grid-column: 1/3; border: solid white 2px;"></div>
+		<p class="resources-list-name">cultivable soil</p>
+		<p class="resources-list-amount" id="cultivable-soil">0</p>
+		<div style="grid-column: 1/3; border: solid white 2px;"></div>
+		<p class="resources-list-name">water</p>
+		<p class="resources-list-amount" id="water">0</p>
+		<div style="grid-column: 1/3; border: solid white 2px;"></div>
+		<p class="resources-list-name">food</p>
+		<p class="resources-list-amount" id="food">0</p>
+		<div style="grid-column: 1/3; border: solid white 2px;"></div>
+		<p class="resources-list-name">basic commodities</p>
+		<p class="resources-list-amount" id="basic-commodities">0</p>
+		<div style="grid-column: 1/3; border: solid white 2px;"></div>
+		<p class="resources-list-name">luxury goods</p>
+		<p class="resources-list-amount" id="luxury-goods">0</p>
+		<div style="grid-column: 1/3; border: solid white 2px;"></div>
+		<p class="resources-list-name">raw minerals</p>
+		<p class="resources-list-amount" id="raw-minerals">0</p>
+		<div style="grid-column: 1/3; border: solid white 2px;"></div>
+		<p class="resources-list-name">metal ore</p>
+		<p class="resources-list-amount" id="metal-ore">0</p>
+		<div style="grid-column: 1/3; border: solid white 2px;"></div>
+		<p class="resources-list-name">refined metal</p>
+		<p class="resources-list-amount" id="refined-metal">0</p>
+		<div style="grid-column: 1/3; border: solid white 2px;"></div>
+		<p class="resources-list-name">heavy armaments</p>
+		<p class="resources-list-amount" id="heavy-armaments">0</p>
+		<div style="grid-column: 1/3; border: solid white 2px;"></div>
+		<p class="resources-list-name">recreational drugs</p>
+		<p class="resources-list-amount" id="recreational-drugs">0</p>
+	</div>
+
+</body>
+<style>
+
+
+
+.resources-list{
+	width: min-content;
+	display: grid;
+	grid-template-columns: auto auto;
+	gap: 10px 25px;
+}
+
+.resources-list-name{
+	grid-column-start: 1;
+	grid-column-end: 2;
+	text-wrap: nowrap;
+	margin: 0;
+}
+
+.resources-list-amount{
+	grid-column-start: 2;
+	grid-column-end: 3;
+	text-wrap: nowrap;
+	margin: 0;
+}
+
+
+
+
+</style>
+<script>
+
+
+
+class Economy {
+	constructor(population, organics, cultivable_soil, water, food, basic_commodities, luxury_goods, raw_minerals, metal_ore, refined_metal, heavy_armaments, recreational_drugs, base_productivity){
+		//Resources
+		this.population =			population
+		this.organics =				organics
+		this.cultivable_soil =		cultivable_soil
+		this.water =				water
+		this.food =					food
+		this.basic_commodities =	basic_commodities
+		this.luxury_goods =			luxury_goods
+		this.raw_minerals =			raw_minerals
+		this.metal_ore =			metal_ore
+		this.refined_metal =		refined_metal
+		this.heavy_armaments =		heavy_armaments
+		this.recreational_drugs =	recreational_drugs
+		//Industry
+		this.water_industry =		new Industry(base_productivity,	20,	0)
+		this.farming =				new Industry(base_productivity,	1,	0)
+		this.light_industry =		new Industry(base_productivity,	8,	0)
+		this.mining =				new Industry(base_productivity,	1,	0)
+		this.refining =				new Industry(base_productivity,	8,	0)
+	}
+}
+
+
+
+
+class Industry {
+	constructor(base_productivity = 1, space_efficiency = 1, size = 0){
+		this.base_productivity =	base_productivity
+		this.productivity =			base_productivity // Productivity is how many employees needed per product produced
+		this.space_efficiency =		space_efficiency
+		this.size =					size
+	}
+}
+
+
+
+
+function simplify(n){
+    if(n < 1000){return Math.round(n)}
+    let denom = 0
+    const symbols = [" ", "K", "M", "B", "T", "Qa", "Qu", "Sx", "Se", "Oc", "No"]
+    while(n >= 1000){
+        denom++
+        n *= 0.001
+    }
+
+    let nr = n
+    nr = Math.floor(nr)
+    nr = nr.toString()
+    let len = nr.length
+    nr = 3 - len
+    if(nr > 0){
+        n = n.toFixed(nr)
+    }
+    else {
+        n = Math.floor(n)
+    }
+
+    return n + symbols[denom]
+}
+
+
+
+
+function update_resources_list(economy = new Economy()){
+	const population = document.getElementById("population")
+	population.textContent = Math.floor(Math.log10(economy.population))
+	const organics = document.getElementById("organics")
+	organics.textContent = simplify(economy.organics)
+	const cultivable_soil = document.getElementById("cultivable-soil")
+	cultivable_soil.textContent = simplify(economy.cultivable_soil)
+	const water = document.getElementById("water")
+	water.textContent = simplify(economy.water)
+	const food = document.getElementById("food")
+	food.textContent = simplify(economy.food)
+	const basic_commodities = document.getElementById("basic-commodities")
+	basic_commodities.textContent = simplify(economy.basic_commodities)
+	const luxury_goods = document.getElementById("luxury-goods")
+	luxury_goods.textContent = simplify(economy.luxury_goods)
+	const raw_minerals = document.getElementById("raw-minerals")
+	raw_minerals.textContent = simplify(economy.raw_minerals)
+	const metal_ore = document.getElementById("metal-ore")
+	metal_ore.textContent = simplify(economy.metal_ore)
+	const refined_metal = document.getElementById("refined-metal")
+	refined_metal.textContent = simplify(economy.refined_metal)
+	const heavy_armaments = document.getElementById("heavy-armaments")
+	heavy_armaments.textContent = simplify(economy.heavy_armaments)
+	const recreational_drugs = document.getElementById("recreational-drugs")
+	recreational_drugs.textContent = simplify(economy.recreational_drugs)
+}
+
+
+
+
+update_resources_list(new Economy(1000, 1200, 5000, 2000, 2500, 1000, 200, 0, 0, 0, 0, 500, 1))
+
+
+</script>
+</html>
