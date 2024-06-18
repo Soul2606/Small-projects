@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <table>
+        <tbody id="main-table">
+            <tr>
+                <th>#</th>
+                <th>primes</th>
+                <th>non primes</th>
+                <th>percent primes</th>
+                <th>is caboose</th>
+            </tr>
+        </tbody>
+    </table>
+</body>
+<script>
+
+
+const isPrime = num => {
+for(let i = 2, s = Math.sqrt(num); i <= s; i++) {
+if(num % i === 0) return false;
+}
+return num > 1;
+}
+
+
+
+
+function crate_table_row(idx, primes, non_primes, percent_primes, is_caboose){
+    const main = document.createElement("tr")
+
+    const idx_td = document.createElement("td")
+    idx_td.textContent = idx
+    main.appendChild(idx_td)
+
+    const primes_td = document.createElement("td")
+    primes_td.textContent = primes
+    main.appendChild(primes_td)
+
+    const non_primes_td = document.createElement("td")
+    non_primes_td.textContent = non_primes
+    main.appendChild(non_primes_td)
+
+    const percent_primes_td = document.createElement("td")
+    percent_primes_td.textContent = percent_primes
+    main.appendChild(percent_primes_td)
+
+    const is_caboose_td = document.createElement("td")
+    is_caboose_td.textContent = is_caboose
+    is_caboose_td.style.color = is_caboose? "green": "red"
+    main.appendChild(is_caboose_td)
+
+    return main
+}
+
+
+
+const table = document.getElementById("main-table")
+
+for (let i = 1; i < 1000; i++) {
+
+    let primes = 0
+    let non_primes = 0
+
+    for (let j = 0; j < i; j++) {
+
+        isPrime(j ** 2 - j + i)? primes++: non_primes++
+        
+    }
+
+    table.appendChild(crate_table_row(i, primes, non_primes, Math.round(primes / i * 100) + "%", non_primes === 0))
+
+    console.log(i, "primes", primes, "non primes", non_primes)
+
+}
+
+
+
+</script>
+</html>
