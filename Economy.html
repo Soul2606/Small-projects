@@ -137,7 +137,7 @@
 class Economy {
 	constructor(population, organics, cultivable_soil, water, food, basic_commodities, luxury_goods, raw_minerals, metal_ore, refined_metal, heavy_armaments, recreational_drugs, base_productivity){
 		this.population =			population
-		this.commodities = new Commodities(organics, cultivable_soil, water, food, basic_commodities, luxury_goods, raw_minerals, metal_ore, refined_metal, heavy_armaments, recreational_drugs)
+		this.commodities =			new Commodities(organics, cultivable_soil, water, food, basic_commodities, luxury_goods, raw_minerals, metal_ore, refined_metal, heavy_armaments, recreational_drugs)
 		//Industry
 		this.water_industry =		new Industry(base_productivity,	20,	0,	new Commodities())
 		this.farming =				new Industry(base_productivity,	2,	0,	new Commodities(0,1))
@@ -348,7 +348,7 @@ function water_industry_interpreter(water_industry = new Industry(), economy = n
 	console.log("water industry", water_industry, "\n economy", economy)
 	
 	const demand = economy.demand()
-	water_industry.size = demand.water
+	water_industry.size = demand.water - economy.commodities.water
 	const jobs = Math.ceil(water_industry.size / water_industry.productivity)
 }
 
