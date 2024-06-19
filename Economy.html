@@ -16,6 +16,8 @@
 		<h3 id="population"></h3>
 	</div>
 
+	<h4 id="unemployment"></h4>
+
 	<div class="flex" style="align-items: flex-start;">
 
 		<div class="resources-list">	
@@ -56,25 +58,32 @@
 	
 		<div class="industry-list">
 			<h3>Industries</h3>
+			<h4>Size</h4>
+			<h4>Jobs</h4>
 			<p class="industry-list-name">water industry</p>
 			<p class="industry-list-size" id="water-industry">0</p>
-			<div style="grid-column: 1/3; border: solid white 2px;"></div>
+			<p class="industry-list-jobs" id="water-industry-jobs">0</p>
+			<div style="grid-column: 1/4; border: solid white 2px;"></div>
 			<p class="industry-list-name">farming</p>
 			<p class="industry-list-size" id="farming">0</p>
-			<div style="grid-column: 1/3; border: solid white 2px;"></div>
+			<p class="industry-list-jobs" id="farming-jobs">0</p>
+			<div style="grid-column: 1/4; border: solid white 2px;"></div>
 			<p class="industry-list-name">light industry</p>
 			<p class="industry-list-size" id="light-industry">0</p>
-			<div style="grid-column: 1/3; border: solid white 2px;"></div>
+			<p class="industry-list-jobs" id="light-industry-jobs">0</p>
+			<div style="grid-column: 1/4; border: solid white 2px;"></div>
 			<p class="industry-list-name">mining</p>
 			<p class="industry-list-size" id="mining">0</p>
-			<div style="grid-column: 1/3; border: solid white 2px;"></div>
+			<p class="industry-list-jobs" id="mining-jobs">0</p>
+			<div style="grid-column: 1/4; border: solid white 2px;"></div>
 			<p class="industry-list-name">refining</p>
 			<p class="industry-list-size" id="refining">0</p>
-			<div style="grid-column: 1/3; border: solid white 2px;"></div>
+			<p class="industry-list-jobs" id="refining-jobs">0</p>
+			<div style="grid-column: 1/4; border: solid white 2px;"></div>
 		</div>
 	</div>
 	
-</body>
+
 <style>
 
 
@@ -107,7 +116,7 @@
 .industry-list{
 	width: min-content;
 	display: grid;
-	grid-template-columns: auto auto;
+	grid-template-columns: auto auto auto;
 	gap: 10px 25px;
 	margin-right: 50px;
 }
@@ -126,6 +135,13 @@
 	margin: 0;
 }
 
+.industry-list-jobs{
+	grid-column-start: 3;
+	grid-column-end: 4;
+	text-wrap: nowrap;
+	margin: 0;
+}
+
 
 
 
@@ -135,15 +151,16 @@
 
 
 class Economy {
-	constructor(population, organics, cultivable_soil, water, food, basic_commodities, luxury_goods, raw_minerals, metal_ore, refined_metal, heavy_armaments, recreational_drugs, base_productivity){
+	constructor(population, organics, cultivable_soil, water, food, basic_commodities, luxury_goods, raw_minerals, metal_ore, refined_metal, heavy_armaments, recreational_drugs){
 		this.population =			population
+		this.unemployed =			population
 		this.commodities =			new Commodities(organics, cultivable_soil, water, food, basic_commodities, luxury_goods, raw_minerals, metal_ore, refined_metal, heavy_armaments, recreational_drugs)
 		//Industry
-		this.water_industry =		new Industry(base_productivity,	20,	0,	new Commodities())
-		this.farming =				new Industry(base_productivity,	2,	0,	new Commodities(0,1))
-		this.light_industry =		new Industry(base_productivity,	8,	0,	new Commodities(1))
-		this.mining =				new Industry(base_productivity,	2,	0,	new Commodities("recreational_drugs,5"))
-		this.refining =				new Industry(base_productivity,	8,	0,	new Commodities("raw_mineral,1,metal_ore,2"))/*raw_mineral, metal_ore*/
+		this.water_industry =		new Industry(6,	20,	0,	new Commodities())
+		this.farming =				new Industry(6,	2,	0,	new Commodities(0,1))
+		this.light_industry =		new Industry(6,	8,	0,	new Commodities(1))
+		this.mining =				new Industry(6,	2,	0,	new Commodities("recreational_drugs,5"))
+		this.refining =				new Industry(6,	8,	0,	new Commodities("raw_mineral,1,metal_ore,2"))/*raw_mineral, metal_ore*/
 	}
 
 	demand() {
@@ -195,21 +212,6 @@ class Commodities {
 				this[key] = value
 			}
 		}
-	}
-
-	toString() {
-		return ""										+
-		"organics"			+ this.organics				+
-		"cultivable_soil"	+ this.cultivable_soil		+
-		"water"				+ this.water				+
-		"food"				+ this.food					+
-		"basic_commodities"	+ this.basic_commodities	+
-		"luxury_goods"		+ this.luxury_goods			+
-		"raw_minerals"		+ this.raw_minerals			+
-		"metal_ore"			+ this.metal_ore			+
-		"refined_metal"		+ this.refined_metal		+
-		"heavy_armaments"	+ this.heavy_armaments		+
-		"recreational_drugs"+ this.recreational_drugs
 	}
 
 	add(value) {
@@ -279,9 +281,23 @@ class Industry {
 		this.productivity =			base_productivity
 		this.space_efficiency =		space_efficiency
 		this.size =					size
-		this.required_labor =		this.productivity * this.size
+		this.jobs =					this.size / this.productivity
+		this.employees =			0
 		this.requirements =			requirements
 	}
+
+	get_employment_factor() {
+		let employees_per_job = this.employees / this.jobs
+		isNaN(employees_per_job)? employees_per_job = 0: do_nothing()
+		return employees_per_job
+	}
+}
+
+
+
+
+function do_nothing(){
+	//I swear this is needed! Trust me.
 }
 
 
@@ -290,7 +306,7 @@ class Industry {
 function simplify(n){
     if(n < 1000){return Math.round(n)}
     let denom = 0
-    const symbols = [" ", "K", "M", "B", "T", "Qa", "Qu", "Sx", "Se", "Oc", "No"]
+    const symbols = ["", "K", "M", "B", "T", "Qa", "Qu", "Sx", "Se", "Oc", "No"]
     while(n >= 1000){
         denom++
         n *= 0.001
@@ -314,47 +330,178 @@ function simplify(n){
 
 
 
-function update_resources_list(economy = new Economy()){
-	const population = document.getElementById("population")
-	population.textContent = Math.floor(Math.log10(economy.population))
-	const organics = document.getElementById("organics")
-	organics.textContent = simplify(economy.commodities.organics)
-	const cultivable_soil = document.getElementById("cultivable-soil")
-	cultivable_soil.textContent = simplify(economy.commodities.cultivable_soil)
-	const water = document.getElementById("water")
-	water.textContent = simplify(economy.commodities.water)
-	const food = document.getElementById("food")
-	food.textContent = simplify(economy.commodities.food)
-	const basic_commodities = document.getElementById("basic-commodities")
-	basic_commodities.textContent = simplify(economy.commodities.basic_commodities)
-	const luxury_goods = document.getElementById("luxury-goods")
-	luxury_goods.textContent = simplify(economy.commodities.luxury_goods)
-	const raw_minerals = document.getElementById("raw-minerals")
-	raw_minerals.textContent = simplify(economy.commodities.raw_minerals)
-	const metal_ore = document.getElementById("metal-ore")
-	metal_ore.textContent = simplify(economy.commodities.metal_ore)
-	const refined_metal = document.getElementById("refined-metal")
-	refined_metal.textContent = simplify(economy.commodities.refined_metal)
-	const heavy_armaments = document.getElementById("heavy-armaments")
-	heavy_armaments.textContent = simplify(economy.commodities.heavy_armaments)
-	const recreational_drugs = document.getElementById("recreational-drugs")
-	recreational_drugs.textContent = simplify(economy.commodities.recreational_drugs)
+function sum_array(array){
+    let sum = 0
+    for (let i = 0; i < array.length; i++) {
+        const element = array[i];
+        sum += element
+    }
+    return sum
 }
 
 
 
 
-function water_industry_interpreter(water_industry = new Industry(), economy = new Economy()){
-	console.log("water industry", water_industry, "\n economy", economy)
+function distribute_positive_number(value, array){
+	/*
+	Function for distributing a number equally over an array without exceeding the array's set limit.
+	Value and all array elements must be positive number.
+	*/
+	let results = []
+	for (let i = 0; i < array.length; i++) {
+		results.push(0)
+	}
+
+	let array_copy = Array.from(array)
+
+	while(sum_array(array_copy) !== 0 && value > 0){
+
+		let lowest_array_value = Infinity
+		let lowest_array_index
+		let amount_of_non_zero_items = 0
+		for (let i = 0; i < array_copy.length; i++) {
+			const element = array_copy[i];
+			if(element !== 0){
+				amount_of_non_zero_items++
+				if (lowest_array_value > element){
+					lowest_array_value = element
+					lowest_array_index = i
+				}
+			}
+		}
+
+		const value_per_array = value / amount_of_non_zero_items
+		const distribute_amount = Math.min(value_per_array, lowest_array_value)
+
+		value -= distribute_amount * amount_of_non_zero_items
+
+		for (let i = 0; i < results.length; i++) {
+			if(array_copy[i] !== 0){
+				results[i] += distribute_amount
+				array_copy[i] -= distribute_amount
+			}
+		}
+	}
+
+	return results
+}
+
+
+
+
+function update_resources_list(economy = new Economy()){
+
+	document.getElementById("population").textContent = Math.floor(Math.log10(economy.population))
+
+	document.getElementById("unemployment").textContent = (economy.unemployed / economy.population * 100) + "%"
+
+	document.getElementById("organics").textContent = simplify(economy.commodities.organics)
+	document.getElementById("cultivable-soil").textContent = simplify(economy.commodities.cultivable_soil)
+	document.getElementById("water").textContent = simplify(economy.commodities.water)
+	document.getElementById("food").textContent = simplify(economy.commodities.food)
+	document.getElementById("basic-commodities").textContent = simplify(economy.commodities.basic_commodities)
+	document.getElementById("luxury-goods").textContent = simplify(economy.commodities.luxury_goods)
+	document.getElementById("raw-minerals").textContent = simplify(economy.commodities.raw_minerals)
+	document.getElementById("metal-ore").textContent = simplify(economy.commodities.metal_ore)
+	document.getElementById("refined-metal").textContent = simplify(economy.commodities.refined_metal)
+	document.getElementById("heavy-armaments").textContent = simplify(economy.commodities.heavy_armaments)
+	document.getElementById("recreational-drugs").textContent = simplify(economy.commodities.recreational_drugs)
+
+	document.getElementById("water-industry").textContent =	Math.round(economy.water_industry.size)
+	document.getElementById("farming").textContent =		Math.round(economy.farming.size)
+	document.getElementById("light-industry").textContent =	Math.round(economy.light_industry.size)
+	document.getElementById("mining").textContent =			Math.round(economy.mining.size)
+	document.getElementById("refining").textContent =		Math.round(economy.refining.size)
+
+	document.getElementById("water-industry-jobs").textContent =	economy.water_industry.employees + "/" + economy.water_industry.jobs
+	document.getElementById("farming-jobs").textContent =			economy.farming.employees + "/" + economy.farming.jobs 
+	document.getElementById("light-industry-jobs").textContent =	economy.light_industry.employees + "/" + economy.light_industry.jobs 
+	document.getElementById("mining-jobs").textContent =			economy.mining.employees + "/" + economy.mining.jobs 
+	document.getElementById("refining-jobs").textContent =			economy.refining.employees + "/" + economy.refining.jobs 
+
+}
+
+
+
+
+function employ_population(economy){
+
+	const population = economy.population
+	let unemployed = economy.unemployed
+
+	let total_available_jobs = 0
+	total_available_jobs += economy.water_industry.jobs - 	economy.water_industry.employees
+	total_available_jobs += economy.farming.jobs - 			economy.farming.employees
+	total_available_jobs += economy.light_industry.jobs - 	economy.light_industry.employees
+	total_available_jobs += economy.mining.jobs - 			economy.mining.employees
+	total_available_jobs += economy.refining.jobs - 		economy.refining.employees
+
+
+	let available_jobs_in_each_industry = []
+	available_jobs_in_each_industry.push(economy.water_industry.jobs - 	economy.water_industry.employees)
+	available_jobs_in_each_industry.push(economy.farming.jobs - 		economy.farming.employees)
+	available_jobs_in_each_industry.push(economy.light_industry.jobs - 	economy.light_industry.employees)
+	available_jobs_in_each_industry.push(economy.mining.jobs - 			economy.mining.employees)
+	available_jobs_in_each_industry.push(economy.refining.jobs - 		economy.refining.employees)
+	
+
+	let people_being_employed_in_each_industry = distribute_positive_number(unemployed, available_jobs_in_each_industry)
+
+
+	economy.unemployed -= sum_array(people_being_employed_in_each_industry)
+
+	economy.water_industry.employees +=	people_being_employed_in_each_industry[0]
+	economy.farming.employees +=		people_being_employed_in_each_industry[1]
+	economy.light_industry.employees +=	people_being_employed_in_each_industry[2]
+	economy.mining.employees +=			people_being_employed_in_each_industry[3]
+	economy.refining.employees +=		people_being_employed_in_each_industry[4]
+}
+
+
+
+
+function population_interpreter(economy){
+
+	economy.commodities.water -= Math.min(economy.population, economy.commodities.water)
+
+	economy.commodities.food -= Math.min(economy.population, economy.commodities.food)
+}
+
+
+
+
+function general_industry_interpreter(industry, economy, industry_production_commodity){
 	
 	const demand = economy.demand()
-	water_industry.size = demand.water - economy.commodities.water
-	const jobs = Math.ceil(water_industry.size / water_industry.productivity)
+	industry.size = Math.max(demand[industry_production_commodity] * 2 - economy.commodities[industry_production_commodity], 0)
+	industry.jobs = Math.ceil(industry.size / industry.productivity)
+	if(industry.jobs < industry.employees){
+		economy.unemployed += industry.employees - industry.jobs
+		industry.employees = industry.jobs
+	}
+
+	economy.commodities[industry_production_commodity] += industry.size * industry.get_employment_factor()
 }
 
 
 
-const economy1 = new Economy(1000, 1200, 5000, 2000, 2500, 1000, 200, 0, 0, 0, 0, 500, 2)
+
+function water_industry_interpreter(economy){
+	
+	general_industry_interpreter(economy.water_industry, economy, "water")
+}
+
+
+
+
+function farming_interpreter(economy){
+
+	general_industry_interpreter(economy.farming, economy, "food")
+}
+
+
+
+const economy1 = new Economy(1000, 1200, 500000, 2000, 2500, 1000, 200, 0, 0, 0, 0, 500)
 
 console.log("economy 1", economy1)
 console.log("demand", economy1.demand())
@@ -362,15 +509,24 @@ console.log("demand", economy1.demand())
 update_resources_list(economy1)
 
 function advance_time(){
+	console.group("advance time")
 
+	employ_population(economy1)
+
+	population_interpreter(economy1)
+
+	water_industry_interpreter(economy1)
+
+	farming_interpreter(economy1)
+	
 	update_resources_list(economy1)
 
-	water_industry_interpreter(economy1.water_industry, economy1)
-
+	console.groupEnd()
 }
 
 
 
 
 </script>
+</body>
 </html>
