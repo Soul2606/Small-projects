@@ -165,11 +165,11 @@ class Economy {
 
 	demand() {
 		let all_requirements = new Commodities(0,0,this.population, this.population)
-		all_requirements.add(this.water_industry.	requirements.multiply(this.water_industry.	size))
-		all_requirements.add(this.farming.			requirements.multiply(this.farming.			size))
-		all_requirements.add(this.light_industry.	requirements.multiply(this.light_industry.	size))
-		all_requirements.add(this.mining.			requirements.multiply(this.mining.			size))
-		all_requirements.add(this.refining.			requirements.multiply(this.refining.		size))
+		all_requirements.add(this.water_industry.	consume.multiply(this.water_industry.	size))
+		all_requirements.add(this.farming.			consume.multiply(this.farming.			size))
+		all_requirements.add(this.light_industry.	consume.multiply(this.light_industry.	size))
+		all_requirements.add(this.mining.			consume.multiply(this.mining.			size))
+		all_requirements.add(this.refining.			consume.multiply(this.refining.			size))
 		return all_requirements
 	}
 }
@@ -215,59 +215,93 @@ class Commodities {
 	}
 
 	add(value) {
+		const new_commodities = new Commodities()
 		if(value instanceof Commodities){
-			this.organics += 			value.organics
-			this.cultivable_soil += 	value.cultivable_soil
-			this.water += 				value.water
-			this.food += 				value.food
-			this.basic_commodities += 	value.basic_commodities
-			this.luxury_goods += 		value.luxury_goods
-			this.raw_minerals += 		value.raw_minerals
-			this.metal_ore += 			value.metal_ore
-			this.refined_metal += 		value.refined_metal
-			this.heavy_armaments += 	value.heavy_armaments
-			this.recreational_drugs += 	value.recreational_drugs
+			new_commodities.organics += 			value.organics
+			new_commodities.cultivable_soil += 	value.cultivable_soil
+			new_commodities.water += 				value.water
+			new_commodities.food += 				value.food
+			new_commodities.basic_commodities += 	value.basic_commodities
+			new_commodities.luxury_goods += 		value.luxury_goods
+			new_commodities.raw_minerals += 		value.raw_minerals
+			new_commodities.metal_ore += 			value.metal_ore
+			new_commodities.refined_metal += 		value.refined_metal
+			new_commodities.heavy_armaments += 	value.heavy_armaments
+			new_commodities.recreational_drugs += 	value.recreational_drugs
 		}else if(typeof value === "number"){
-			this.organics += 			value
-			this.cultivable_soil += 	value
-			this.water += 				value
-			this.food += 				value
-			this.basic_commodities += 	value
-			this.luxury_goods += 		value
-			this.raw_minerals += 		value
-			this.metal_ore += 			value
-			this.refined_metal += 		value
-			this.heavy_armaments += 	value
-			this.recreational_drugs += 	value
+			new_commodities.organics += 			value
+			new_commodities.cultivable_soil += 	value
+			new_commodities.water += 				value
+			new_commodities.food += 				value
+			new_commodities.basic_commodities += 	value
+			new_commodities.luxury_goods += 		value
+			new_commodities.raw_minerals += 		value
+			new_commodities.metal_ore += 			value
+			new_commodities.refined_metal += 		value
+			new_commodities.heavy_armaments += 	value
+			new_commodities.recreational_drugs += 	value
 		}
+		return new_commodities
 	}
 
 	multiply(value) {
+		const new_commodities = new Commodities()
 		if(value instanceof Commodities){
-			this.organics *= 			value.organics
-			this.cultivable_soil *= 	value.cultivable_soil
-			this.water *= 				value.water
-			this.food *= 				value.food
-			this.basic_commodities *= 	value.basic_commodities
-			this.luxury_goods *= 		value.luxury_goods
-			this.raw_minerals *= 		value.raw_minerals
-			this.metal_ore *= 			value.metal_ore
-			this.refined_metal *= 		value.refined_metal
-			this.heavy_armaments *= 	value.heavy_armaments
-			this.recreational_drugs *= 	value.recreational_drugs
+			new_commodities.organics *= 			value.organics
+			new_commodities.cultivable_soil *= 	value.cultivable_soil
+			new_commodities.water *= 				value.water
+			new_commodities.food *= 				value.food
+			new_commodities.basic_commodities *= 	value.basic_commodities
+			new_commodities.luxury_goods *= 		value.luxury_goods
+			new_commodities.raw_minerals *= 		value.raw_minerals
+			new_commodities.metal_ore *= 			value.metal_ore
+			new_commodities.refined_metal *= 		value.refined_metal
+			new_commodities.heavy_armaments *= 	value.heavy_armaments
+			new_commodities.recreational_drugs *= 	value.recreational_drugs
 		}else if(typeof value === "number"){
-			this.organics *= 			value
-			this.cultivable_soil *= 	value
-			this.water *= 				value
-			this.food *= 				value
-			this.basic_commodities *= 	value
-			this.luxury_goods *= 		value
-			this.raw_minerals *= 		value
-			this.metal_ore *= 			value
-			this.refined_metal *= 		value
-			this.heavy_armaments *= 	value
-			this.recreational_drugs *= 	value
+			new_commodities.organics *= 			value
+			new_commodities.cultivable_soil *= 	value
+			new_commodities.water *= 				value
+			new_commodities.food *= 				value
+			new_commodities.basic_commodities *= 	value
+			new_commodities.luxury_goods *= 		value
+			new_commodities.raw_minerals *= 		value
+			new_commodities.metal_ore *= 			value
+			new_commodities.refined_metal *= 		value
+			new_commodities.heavy_armaments *= 	value
+			new_commodities.recreational_drugs *= 	value
 		}
+		return new_commodities
+	}
+
+	divide(value) {
+		const new_commodities = new Commodities()
+		if(value instanceof Commodities){
+			new_commodities.organics /= 			value.organics
+			new_commodities.cultivable_soil /= 	value.cultivable_soil
+			new_commodities.water /= 				value.water
+			new_commodities.food /= 				value.food
+			new_commodities.basic_commodities /= 	value.basic_commodities
+			new_commodities.luxury_goods /= 		value.luxury_goods
+			new_commodities.raw_minerals /= 		value.raw_minerals
+			new_commodities.metal_ore /= 			value.metal_ore
+			new_commodities.refined_metal /= 		value.refined_metal
+			new_commodities.heavy_armaments /= 	value.heavy_armaments
+			new_commodities.recreational_drugs /= 	value.recreational_drugs
+		}else if(typeof value === "number"){
+			new_commodities.organics /= 			value
+			new_commodities.cultivable_soil /= 	value
+			new_commodities.water /= 				value
+			new_commodities.food /= 				value
+			new_commodities.basic_commodities /= 	value
+			new_commodities.luxury_goods /= 		value
+			new_commodities.raw_minerals /= 		value
+			new_commodities.metal_ore /= 			value
+			new_commodities.refined_metal /= 		value
+			new_commodities.heavy_armaments /= 	value
+			new_commodities.recreational_drugs /= 	value
+		}
+		return new_commodities
 	}
 
 }
@@ -276,19 +310,20 @@ class Commodities {
 
 
 class Industry {
-	constructor(base_productivity = 1, space_efficiency = 1, size = 0, requirements = new Commodities()){
+	constructor(base_productivity = 1, space_efficiency = 1, size = 0, consume = new Commodities()){
 		this.base_productivity =	base_productivity
 		this.productivity =			base_productivity
 		this.space_efficiency =		space_efficiency
 		this.size =					size
 		this.jobs =					this.size / this.productivity
 		this.employees =			0
-		this.requirements =			requirements
+		this.consume =				consume
 	}
 
 	get_employment_factor() {
 		let employees_per_job = this.employees / this.jobs
-		isNaN(employees_per_job)? employees_per_job = 0: do_nothing()
+		isNaN(employees_per_job)? employees_per_job = 0:
+		isFinite(employees_per_job)? do_nothing():employees_per_job = 0
 		return employees_per_job
 	}
 }
@@ -298,6 +333,13 @@ class Industry {
 
 function do_nothing(){
 	//I swear this is needed! Trust me.
+}
+
+
+
+
+function clamp(value, min, max){
+	return isNaN(Math.min(max, Math.max(min, value)))? 0: Math.min(max, Math.max(min, value))
 }
 
 
@@ -480,7 +522,14 @@ function general_industry_interpreter(industry, economy, industry_production_com
 		industry.employees = industry.jobs
 	}
 
-	economy.commodities[industry_production_commodity] += industry.size * industry.get_employment_factor()
+
+	//work in progress
+	console.log(industry.consume.divide(2))
+
+	const consume_satisfaction = 1
+
+
+	economy.commodities[industry_production_commodity] += industry.size * industry.get_employment_factor() * consume_satisfaction
 }
 
 
