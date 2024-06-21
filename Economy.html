@@ -156,11 +156,11 @@ class Economy {
 		this.unemployed =			population
 		this.commodities =			new Commodities(organics, cultivable_soil, water, food, basic_commodities, luxury_goods, raw_minerals, metal_ore, refined_metal, heavy_armaments, recreational_drugs)
 		//Industry
-		this.water_industry =		new Industry(6,	20,	0,	new Commodities())
-		this.farming =				new Industry(6,	2,	0,	new Commodities(0,1))
-		this.light_industry =		new Industry(6,	8,	0,	new Commodities(1))
-		this.mining =				new Industry(6,	2,	0,	new Commodities("recreational_drugs,5"))
-		this.refining =				new Industry(6,	8,	0,	new Commodities("raw_mineral,1,metal_ore,2"))/*raw_mineral, metal_ore*/
+		this.water_industry =		new Industry("water_industry", 6,	20,	0,	new Commodities())
+		this.farming =				new Industry("farming", 6,	2,	0,	new Commodities(0,1))
+		this.light_industry =		new Industry("light_industry", 6,	8,	0,	new Commodities(1))
+		this.mining =				new Industry("mining", 6,	2,	0,	new Commodities("recreational_drugs,5"))
+		this.refining =				new Industry("refining", 6,	8,	0,	new Commodities("raw_mineral,1,metal_ore,2"))/*raw_mineral, metal_ore*/
 	}
 
 	demand() {
@@ -214,11 +214,27 @@ class Commodities {
 		}
 	}
 
-	add(value) {
+	clone(){
 		const new_commodities = new Commodities()
+		new_commodities.organics = 				this.organics
+		new_commodities.cultivable_soil = 		this.cultivable_soil
+		new_commodities.water = 				this.water
+		new_commodities.food = 					this.food
+		new_commodities.basic_commodities = 	this.basic_commodities
+		new_commodities.luxury_goods = 			this.luxury_goods
+		new_commodities.raw_minerals = 			this.raw_minerals
+		new_commodities.metal_ore = 			this.metal_ore
+		new_commodities.refined_metal = 		this.refined_metal
+		new_commodities.heavy_armaments = 		this.heavy_armaments
+		new_commodities.recreational_drugs = 	this.recreational_drugs
+		return new_commodities
+	}
+
+	add(value) {
+		const new_commodities = this.clone()
 		if(value instanceof Commodities){
 			new_commodities.organics += 			value.organics
-			new_commodities.cultivable_soil += 	value.cultivable_soil
+			new_commodities.cultivable_soil += 		value.cultivable_soil
 			new_commodities.water += 				value.water
 			new_commodities.food += 				value.food
 			new_commodities.basic_commodities += 	value.basic_commodities
@@ -226,11 +242,11 @@ class Commodities {
 			new_commodities.raw_minerals += 		value.raw_minerals
 			new_commodities.metal_ore += 			value.metal_ore
 			new_commodities.refined_metal += 		value.refined_metal
-			new_commodities.heavy_armaments += 	value.heavy_armaments
+			new_commodities.heavy_armaments += 		value.heavy_armaments
 			new_commodities.recreational_drugs += 	value.recreational_drugs
 		}else if(typeof value === "number"){
 			new_commodities.organics += 			value
-			new_commodities.cultivable_soil += 	value
+			new_commodities.cultivable_soil += 		value
 			new_commodities.water += 				value
 			new_commodities.food += 				value
 			new_commodities.basic_commodities += 	value
@@ -238,17 +254,17 @@ class Commodities {
 			new_commodities.raw_minerals += 		value
 			new_commodities.metal_ore += 			value
 			new_commodities.refined_metal += 		value
-			new_commodities.heavy_armaments += 	value
+			new_commodities.heavy_armaments += 		value
 			new_commodities.recreational_drugs += 	value
 		}
 		return new_commodities
 	}
 
 	multiply(value) {
-		const new_commodities = new Commodities()
+		const new_commodities = this.clone()
 		if(value instanceof Commodities){
 			new_commodities.organics *= 			value.organics
-			new_commodities.cultivable_soil *= 	value.cultivable_soil
+			new_commodities.cultivable_soil *= 		value.cultivable_soil
 			new_commodities.water *= 				value.water
 			new_commodities.food *= 				value.food
 			new_commodities.basic_commodities *= 	value.basic_commodities
@@ -256,11 +272,11 @@ class Commodities {
 			new_commodities.raw_minerals *= 		value.raw_minerals
 			new_commodities.metal_ore *= 			value.metal_ore
 			new_commodities.refined_metal *= 		value.refined_metal
-			new_commodities.heavy_armaments *= 	value.heavy_armaments
+			new_commodities.heavy_armaments *= 		value.heavy_armaments
 			new_commodities.recreational_drugs *= 	value.recreational_drugs
 		}else if(typeof value === "number"){
 			new_commodities.organics *= 			value
-			new_commodities.cultivable_soil *= 	value
+			new_commodities.cultivable_soil *= 		value
 			new_commodities.water *= 				value
 			new_commodities.food *= 				value
 			new_commodities.basic_commodities *= 	value
@@ -268,14 +284,14 @@ class Commodities {
 			new_commodities.raw_minerals *= 		value
 			new_commodities.metal_ore *= 			value
 			new_commodities.refined_metal *= 		value
-			new_commodities.heavy_armaments *= 	value
+			new_commodities.heavy_armaments *= 		value
 			new_commodities.recreational_drugs *= 	value
 		}
 		return new_commodities
 	}
 
 	divide(value) {
-		const new_commodities = new Commodities()
+		const new_commodities = this.clone()
 		if(value instanceof Commodities){
 			new_commodities.organics /= 			value.organics
 			new_commodities.cultivable_soil /= 	value.cultivable_soil
@@ -310,7 +326,8 @@ class Commodities {
 
 
 class Industry {
-	constructor(base_productivity = 1, space_efficiency = 1, size = 0, consume = new Commodities()){
+	constructor(name, base_productivity = 1, space_efficiency = 1, size = 0, consume = new Commodities()){
+		this.name =					name
 		this.base_productivity =	base_productivity
 		this.productivity =			base_productivity
 		this.space_efficiency =		space_efficiency
@@ -339,7 +356,8 @@ function do_nothing(){
 
 
 function clamp(value, min, max){
-	return isNaN(Math.min(max, Math.max(min, value)))? 0: Math.min(max, Math.max(min, value))
+	let results = Math.min(max, Math.max(min, value))
+	return isNaN(results) || results === Infinity? 0: results
 }
 
 
@@ -372,11 +390,44 @@ function simplify(n){
 
 
 
-function sum_array(array){
-    let sum = 0
-    for (let i = 0; i < array.length; i++) {
-        const element = array[i];
-        sum += element
+function sum(input){
+    let sum = 0;
+    let values = [];
+
+    // Check if input is an array or an object
+    if (Array.isArray(input)) {
+        values = input;
+    } else if (typeof input === 'object') {
+        values = Object.values(input);
+    }
+
+    for (let i = 0; i < values.length; i++) {
+        const element = values[i];
+        sum += element;
+    }
+    return sum;
+}
+
+
+
+
+function product(input){
+
+	let values
+
+	if (Array.isArray(input)) {
+		values = input
+	} else if(typeof input === "object"){
+		values = Object.values(input)
+	}
+
+	if (values.length === 0) {
+		return 0
+	}
+    let sum = values[0]
+    for (let i = 1; i < values.length; i++) {
+        const element = values[i];
+        sum *= element
     }
     return sum
 }
@@ -396,7 +447,7 @@ function distribute_positive_number(value, array){
 
 	let array_copy = Array.from(array)
 
-	while(sum_array(array_copy) !== 0 && value > 0){
+	while(sum(array_copy) !== 0 && value > 0){
 
 		let lowest_array_value = Infinity
 		let lowest_array_index
@@ -490,7 +541,7 @@ function employ_population(economy){
 	let people_being_employed_in_each_industry = distribute_positive_number(unemployed, available_jobs_in_each_industry)
 
 
-	economy.unemployed -= sum_array(people_being_employed_in_each_industry)
+	economy.unemployed -= sum(people_being_employed_in_each_industry)
 
 	economy.water_industry.employees +=	people_being_employed_in_each_industry[0]
 	economy.farming.employees +=		people_being_employed_in_each_industry[1]
@@ -513,6 +564,7 @@ function population_interpreter(economy){
 
 
 function general_industry_interpreter(industry, economy, industry_production_commodity){
+	console.groupCollapsed("interpreter general industry:", industry.name)
 	
 	const demand = economy.demand()
 	industry.size = Math.max(demand[industry_production_commodity] * 2 - economy.commodities[industry_production_commodity], 0)
@@ -523,13 +575,44 @@ function general_industry_interpreter(industry, economy, industry_production_com
 	}
 
 
-	//work in progress
-	console.log(industry.consume.divide(2))
 
-	const consume_satisfaction = 1
+	console.groupCollapsed("for loop")
+	const commodities_consumed = industry.consume
+	let commodities_consumed_satisfaction = []
+	let commodities_consumed_keys = []
+	console.log("looping over object:", commodities_consumed)
+	for (let [key, value] of Object.entries(commodities_consumed)) {
+		console.log("key", key, "value", value)
+		if (value !== 0) {
+			const satisfaction = clamp(economy.commodities[key] / (value * industry.size), 0, 1)
+			commodities_consumed_satisfaction.push(satisfaction)
+			commodities_consumed_keys.push(key)
+		}
+	}
+	console.groupEnd()
+	
+	console.log("commodities_consumed_satisfaction",commodities_consumed_satisfaction)
+	console.log("commodities_consumed_keys",commodities_consumed_keys)
+	
+	const consume_satisfaction = commodities_consumed_satisfaction.length === 0? 1: product(commodities_consumed_satisfaction)
+
+	console.log("consume_satisfaction",consume_satisfaction)
 
 
-	economy.commodities[industry_production_commodity] += industry.size * industry.get_employment_factor() * consume_satisfaction
+
+	const industry_total_production = industry.size * industry.get_employment_factor() * consume_satisfaction
+
+	economy.commodities[industry_production_commodity] += industry_total_production
+
+	for (let i = 0; i < commodities_consumed_keys.length; i++) {
+		const key = commodities_consumed_keys[i];
+		
+		economy.commodities[key] -= industry_total_production * industry.consume[key]
+
+	}
+
+	console.groupEnd()
+
 }
 
 
@@ -550,10 +633,7 @@ function farming_interpreter(economy){
 
 
 
-const economy1 = new Economy(1000, 1200, 500000, 2000, 2500, 1000, 200, 0, 0, 0, 0, 500)
-
-console.log("economy 1", economy1)
-console.log("demand", economy1.demand())
+const economy1 = new Economy(1000, 1200, 50000, 2000, 2500, 1000, 200, 0, 0, 0, 0, 500)
 
 update_resources_list(economy1)
 
