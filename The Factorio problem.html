@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+	<div style="margin: auto; width: fit-content;">
+
+		<div class="output-grid" style="grid-template-columns: auto auto;" id="main-grid"></div>
+
+	</div>
+
+<style>
+
+.output-grid{
+	margin: 2px;
+	padding: 5px;
+	border-left: solid white 1px;
+	border-right: solid white 1px;
+	display: grid;
+	column-gap: 5px;
+}
+
+.output{
+	border: solid white 1px;
+	width: fit-content;
+	margin: 2px;
+}
+
+.output-text{
+	margin: 0 5px;
+	border-left: solid white 1px;
+	border-right: solid white 1px;
+}
+
+.splitter{
+	border-top: solid white 4px;
+	margin: 4px 2px;
+}
+
+</style>
+<script>
+
+
+const main_grid = document.getElementById("main-grid")
+const amount_starting_output = 2
+const all_elements = []
+
+
+
+
+function number_to_letter(number) {
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    let result = ""
+
+    function print_to_letter(num) {
+        const charIndex = num % alphabet.length
+        const quotient = Math.floor(num / alphabet.length)
+
+        if (charIndex === 0) {
+            charIndex = alphabet.length
+            quotient--
+        }
+
+        result = alphabet.charAt(charIndex - 1) + result
+
+        if (quotient >= 1) {
+            print_to_letter(quotient)
+        }
+    }
+
+    print_to_letter(number)
+    return result
+}
+
+
+
+
+function create_output(text, column_start, column_end){
+	const output = document.createElement("p")
+	output.className = "output-text"
+	output.textContent = text
+	output.style.gridColumn = column_start + "/" + column_end
+	output.addEventListener("click", clicked_output)
+	return output
+}
+
+
+
+
+function clicked_output(){
+
+	const amount_of_columns = get_element_grid_columns(main_grid)
+	set_element_grid_columns(main_grid, amount_of_columns + 1)
+
+	const this_element_column_start = get_element_grid_column_start_end(this).start
+	const this_element_column_end = get_element_grid_column_start_end(this).end
+	console.log("this_element_column_start", this_element_column_start)
+
+	for (let i = 0; i < all_elements.length; i++) {
+		const element = all_elements[i];
+		const element_column_start = get_element_grid_column_start_end(element).start
+		if (element_column_start > this_element_column_start) {
+			set_element_grid_column_start_end(element, element_column_start + 1, element_column_start + 2)
+		}
+	}
+
+	set_element_grid_column_start_end(this, this_element_column_start, this_element_column_end + 1)
+
+	const new_output_element1_1 = create_output(1, this_element_column_start, this_element_column_end)
+	const new_output_element1_2 = create_output(1, this_element_column_start + 1, this_element_column_end + 1)
+
+	all_elements.push(new_output_element1_1)
+	all_elements.push(new_output_element1_2)
+
+	main_grid.appendChild(new_output_element1_1)
+	main_grid.appendChild(new_output_element1_2)
+}
+
+
+
+
+function set_element_grid_columns(element, amount){
+	let string = ""
+	for (let i = 0; i < amount; i++) {
+		string += " auto"		
+	}
+	element.style.gridTemplateColumns = string
+}
+
+
+
+
+function get_element_grid_columns(element){
+
+	return element.style.gridTemplateColumns.split(" ").length
+
+}
+
+
+
+
+function get_element_grid_column_start_end(element){
+	const array = element.style.gridColumn.split(" / ")
+	return {start:Number(array[0]), end:Number(array[1])}
+}
+
+
+
+
+function set_element_grid_column_start_end(element, start, end){
+	element.style.gridColumn = start + "/" + end
+}
+
+
+
+
+set_element_grid_columns(main_grid, amount_starting_output)
+
+for (let i = 0; i < amount_starting_output; i++) {
+	const new_element = create_output("output a " + i, i+1, i+2)
+	all_elements.push(new_element)
+	main_grid.appendChild(new_element)
+}
+
+console.log("all elements", all_elements)
+
+main_grid.attr
+
+</script>
+</body>
+</html>

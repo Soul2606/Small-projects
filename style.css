@@ -22,3 +22,7 @@ body{
     display: flex;
     align-items: flex-end;
 }
+
+.column{
+    flex-direction: column;
+}
