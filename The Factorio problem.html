@@ -159,17 +159,181 @@ function set_element_grid_column_start_end(element, start, end){
 
 
 
-set_element_grid_columns(main_grid, amount_starting_output)
 
-for (let i = 0; i < amount_starting_output; i++) {
-	const new_element = create_output("output a " + i, i+1, i+2)
-	all_elements.push(new_element)
-	main_grid.appendChild(new_element)
+
+
+
+
+
+class Fraction{
+	constructor(numerator = 0, denominator = 1){
+		this.numerator = numerator
+		this.denominator = denominator
+	}
+
+	clone(){
+		return new Fraction(this.numerator, this.denominator)
+	}
+
+	solve(){
+		return this.numerator / this.denominator
+	}
+
+	simplify() {
+		const gcd = (a, b) => {
+			// Euclidean algorithm to find GCD
+			if (b === 0) {
+				return a
+			} else {
+				return gcd(b, a % b)
+			}
+		}
+
+		const divisor = gcd(this.numerator, this.denominator)
+
+		this.numerator /= divisor
+		this.denominator /= divisor
+
+		return this
+	}
+
+	improper(){
+		const multiplier = Math.floor(this.numerator / this.denominator)
+
+		this.numerator -= multiplier * this.denominator
+
+		this.simplify()
+
+		return multiplier
+	}
+
+	add(value){
+		const new_fraction = this.clone()
+
+		if (value instanceof Fraction) {
+
+			const new_value_fraction = value.clone()
+			const this_denominator = this.denominator
+
+			new_fraction.numerator *= new_value_fraction.denominator
+			new_fraction.denominator *= new_value_fraction.denominator
+
+			new_value_fraction.numerator *= this_denominator
+			new_value_fraction.denominator *= this_denominator
+
+			new_fraction.numerator += new_value_fraction.numerator
+
+		}else{
+
+			new_fraction.numerator += value * new_fraction.denominator
+
+		}
+
+		new_fraction.simplify()
+		
+		return new_fraction
+	}
+
+	subtract(value){
+		const new_fraction = this.clone()
+
+		if (value instanceof Fraction) {
+
+			const new_value_fraction = value.clone()
+			const this_denominator = this.denominator
+
+			new_fraction.numerator *= new_value_fraction.denominator
+			new_fraction.denominator *= new_value_fraction.denominator
+
+			new_value_fraction.numerator *= this_denominator
+			new_value_fraction.denominator *= this_denominator
+
+			new_fraction.numerator -= new_value_fraction.numerator
+
+		}else{
+
+			new_fraction.numerator -= value * new_fraction.denominator
+
+		}
+
+		new_fraction.simplify()
+		
+		return new_fraction
+	}
+
+	multiply(value){
+
+		const new_fraction = this.clone()
+
+		if (value instanceof Fraction) {
+
+			new_fraction.numerator *= value.numerator
+			new_fraction.denominator *= value.denominator
+
+		}else{
+			
+			new_fraction.numerator *= value
+			
+		}
+		
+		new_fraction.simplify()
+
+		return new_fraction
+	}
+
+	divide(value){
+
+		const new_fraction = this.clone()
+
+		if (value instanceof Fraction) {
+
+			new_fraction.numerator *= value.denominator
+			new_fraction.denominator *= value.numerator
+
+		}else{
+			
+			new_fraction.denominator *= value
+			
+		}
+		
+		new_fraction.simplify()
+
+		return new_fraction
+	}
+
+	sum(fractions) {
+		let total = new Fraction()
+		for(let i = 0; i < fractions.length; i++) {
+			total = total.add(fractions[i])
+		}
+		
+		total.simplify()
+
+		const total_numerator = total.numerator
+		const total_denominator = total.denominator
+
+		this.numerator = total_numerator
+		this.denominator = total_denominator
+	}
+
 }
 
-console.log("all elements", all_elements)
 
-main_grid.attr
+
+
+function merge(input_1 = new Fraction(), input_2 = new Fraction()){
+	return {sum:input_1.add(input_2), overflow:(input_1.add(input_2)).solve() > 1}
+}
+
+
+
+
+const new_fraction = new Fraction(1,2)
+const added_improper = new_fraction.add(1)
+const added = added_improper.clone()
+console.log(added_improper)
+console.log("whole fraction",added.improper(), "+", added)
+
 
 </script>
 </body>
