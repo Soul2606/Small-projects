@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+	<div class="sticky">
+		<button id="next-button">next</button>
+		<button id="zoom-in-button">in</button>
+		<button id="zoom-out-button">out</button>
+		<input type="range" value="0" min="-100" max="100">
+		<label >zoom</label>
+	</div>
+
+	<div class="flex justify-center">
+		<div id="number-line" style="position: relative; margin: auto; border: solid white 1px;"></div>
+	</div>
+
+<style>
+
+.sticky{
+	position: sticky;
+	border-bottom: solid white 2px;
+}
+
+.circle{ 
+	border-radius: 50%;
+	box-sizing: border-box;
+}
+
+.slice-box{
+	overflow: hidden;
+	transform-origin:center bottom;
+}
+
+</style>
+<script>
+
+
+const number_line_element = document.getElementById("number-line")
+
+
+function create_semicircle(scale, rotation, color, border_width){
+
+	const main_body = document.createElement("div")
+	main_body.style.width = scale + "px"
+	main_body.style.height = scale + "px"
+	
+	const slice_box = document.createElement("div")
+	slice_box.className = "slice-box"
+	slice_box.style.width = scale + "px"
+	slice_box.style.height = scale / 2 + "px"
+	slice_box.style.transform = "rotate("+ rotation +"deg)"
+
+	const circle = document.createElement("div")
+	circle.className = "circle"
+	circle.style.width = scale + "px"
+	circle.style.height = scale + "px"
+	circle.style.border = "solid " + color + " " + border_width + "px"
+
+	slice_box.appendChild(circle)
+	main_body.appendChild(slice_box)
+	return main_body
+}
+
+
+
+function create_semicircle_on_number_line(start, end, scale, right, border_width){
+	let position_top
+	let element_scale
+	if (start <= end) {
+		
+		element_scale = (end - start) * scale + border_width
+		position_top = start * scale
+		
+	}else{
+		
+		element_scale = (start - end) * scale + border_width
+		position_top = end * scale
+
+	}
+	
+	const semicircle_element = create_semicircle(element_scale, right? 90: 270, "white", border_width)
+	semicircle_element.style.position = "absolute"
+	semicircle_element.style.top = position_top + "px"
+	semicircle_element.style.left = element_scale / -2 + "px"
+	number_line_element.appendChild(semicircle_element)
+}
+
+
+let value = 1
+let change = 0
+const visited = [1]
+let semicircle_element_facing_right = true
+
+
+console.log("value", value, "change", change)
+
+const next_sequence = () => {
+	change++
+	console.group(change)
+
+	const value_minus_change = value - change
+	const value_decreased = (!visited.includes(value_minus_change)) && value_minus_change >= 1
+
+	if (value_decreased) {
+		value -= change
+	}else{
+		value += change
+	}
+	visited.push(value)
+	console.log("value", value, "change", change)
+	
+	
+
+	let start = value_decreased? value + change: value - change
+	let end = value
+	
+	console.log("start", start, "end", end)
+
+	create_semicircle_on_number_line(start, end, 10, semicircle_element_facing_right, 2)
+
+	semicircle_element_facing_right = semicircle_element_facing_right? false: true
+	console.groupEnd()
+}
+
+document.getElementById("next-button").addEventListener("click", next_sequence)
+
+/*
+create_semicircle_on_number_line(1,2,10,true,2)
+create_semicircle_on_number_line(2,3,10,false,2)
+create_semicircle_on_number_line(3,5,10,true,2)
+create_semicircle_on_number_line(5,4,10,false,2)
+*/
+</script>
+</body>
+</html>
