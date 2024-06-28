@@ -172,6 +172,27 @@ class Economy {
 		all_requirements.add(this.refining.			consume.multiply(this.refining.			size))
 		return all_requirements
 	}
+
+	get_total_available_jobs(){
+		let total_available_jobs = 0
+		total_available_jobs += this.water_industry.jobs - 	this.water_industry.employees
+		total_available_jobs += this.farming.jobs - 			this.farming.employees
+		total_available_jobs += this.light_industry.jobs - 	this.light_industry.employees
+		total_available_jobs += this.mining.jobs - 			this.mining.employees
+		total_available_jobs += this.refining.jobs - 		this.refining.employees
+		return total_available_jobs
+	}
+
+	get_available_jobs_in_each_industry(){
+		const object = {
+			water_industry:	(this.water_industry.jobs - 	this.water_industry.employees),
+			farming:		(this.farming.jobs - 			this.farming.employees),
+			light_industry:	(this.light_industry.jobs - 	this.light_industry.employees),
+			mining:			(this.mining.jobs - 			this.mining.employees),
+			refining:		(this.refining.jobs - 			this.refining.employees)
+		}
+		return object
+	}
 }
 
 
@@ -482,6 +503,39 @@ function distribute_positive_number(value, array){
 
 
 
+function supply_demand_ratio(supply, demand){
+	if (typeof supply === "number" && typeof demand === "number") {
+		return clamp(supply / demand, 0, 1)
+	}
+	if (!Array.isArray(supply) && Array.isArray(demand)) {
+		let results = []
+		for (let i = 0; i < demand.length; i++) {
+			const element = demand[i];
+			results.push(clamp(supply / element, 0, 1))
+		}
+		return results
+	}
+	if (Array.isArray(supply) && !Array.isArray(demand)) {
+		let results = []
+		for (let i = 0; i < supply.length; i++) {
+			const element = supply[i];
+			results.push(clamp(element / demand, 0, 1))
+		}
+		return results
+	}
+	let results = []
+	const max = Math.max(supply.length, demand.length)
+	for (let i = 0; i < max; i++) {
+		const supply_i = supply[i] === undefined? 0: supply[i];
+		const demand_i = demand[i] === undefined? 0: demand[i];
+		results.push(clamp(supply_i / demand_i, 0, 1))
+	}
+	return results
+}
+
+
+
+
 function update_resources_list(economy = new Economy()){
 
 	document.getElementById("population").textContent = Math.floor(Math.log10(economy.population))
@@ -520,25 +574,11 @@ function update_resources_list(economy = new Economy()){
 function employ_population(economy){
 
 	const population = economy.population
-	let unemployed = economy.unemployed
+	const unemployed = economy.unemployed
 
-	let total_available_jobs = 0
-	total_available_jobs += economy.water_industry.jobs - 	economy.water_industry.employees
-	total_available_jobs += economy.farming.jobs - 			economy.farming.employees
-	total_available_jobs += economy.light_industry.jobs - 	economy.light_industry.employees
-	total_available_jobs += economy.mining.jobs - 			economy.mining.employees
-	total_available_jobs += economy.refining.jobs - 		economy.refining.employees
+	const available_jobs_in_each_industry = Object.values(economy.get_available_jobs_in_each_industry())
 
-
-	let available_jobs_in_each_industry = []
-	available_jobs_in_each_industry.push(economy.water_industry.jobs - 	economy.water_industry.employees)
-	available_jobs_in_each_industry.push(economy.farming.jobs - 		economy.farming.employees)
-	available_jobs_in_each_industry.push(economy.light_industry.jobs - 	economy.light_industry.employees)
-	available_jobs_in_each_industry.push(economy.mining.jobs - 			economy.mining.employees)
-	available_jobs_in_each_industry.push(economy.refining.jobs - 		economy.refining.employees)
-	
-
-	let people_being_employed_in_each_industry = distribute_positive_number(unemployed, available_jobs_in_each_industry)
+	const people_being_employed_in_each_industry = distribute_positive_number(unemployed, available_jobs_in_each_industry)
 
 
 	economy.unemployed -= sum(people_being_employed_in_each_industry)
