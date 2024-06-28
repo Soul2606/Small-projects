@@ -70,6 +70,8 @@ let change_zoom_scale_set_interval_id
 let auto_speed = Number(speed_slider.value)
 let next_sequence_set_interval_id
 
+let semicircle_color_hue = 0
+
 
 
 function create_semicircle(scale, rotation, color, border_width){
@@ -163,10 +165,16 @@ function next_sequence(){
 	
 	console.log("start", start, "end", end)
 
-	number_line_element.appendChild(create_semicircle_on_number_line(start, end, 10, semicircle_element_facing_right, 3))
+	const semicircle_element = create_semicircle_on_number_line(start, end, 10, semicircle_element_facing_right, 3)
+
+	semicircle_element.firstChild.firstChild.style.border = "solid hsl("+semicircle_color_hue+", 90%, 50%) 3px"
+
+	number_line_element.appendChild(semicircle_element)
 
 	semicircle_element_facing_right = semicircle_element_facing_right? false: true
 
+	semicircle_color_hue+=2
+	semicircle_color_hue = semicircle_color_hue % 356
 
 
 	document.getElementById("jump-size-display").textContent = change
