@@ -144,6 +144,42 @@ function distribute_evenly_within_range(value, ranges){
 
 
 
+//Attempt 2
+function distribute_evenly_within_range(value, ranges){
+    let results = []
+    let indexes_to_exclude = []
+
+    for (let i = 0; i < ranges.length; i++) {
+        results.push(0)
+    }
+
+    for (let i = 0; i < ranges.length; i++) {
+        
+        let lowest_value = Infinity
+        for (let i = 0; i < ranges.length; i++) {
+            const element = ranges[i];
+            if (element < lowest_value) {
+                lowest_value = element
+            }
+        }
+
+        const value_per_item = value / ranges.length
+
+        if (value_per_item <= lowest_value){
+
+            for (let i = 0; i < ranges.length; i++) {
+                results[i] += value_per_item
+            }
+
+            return results
+        }
+
+    }
+}
+
+
+
+
 
 function spread(array){
     console.groupCollapsed("spread")
