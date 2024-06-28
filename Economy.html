@@ -25,7 +25,7 @@
 			<h4>Amount</h4>
 			<h4>Demand</h4>
 			<h4>Price</h4>
-			
+
 			<p class="resources-list-item">organics</p>
 			<p class="resources-list-item" id="organics">0</p>
 			<p class="resources-list-item" id="organics-demand">0</p>
@@ -176,7 +176,10 @@
 
 </style>
 <script>
-
+/*
+	Bugs:
+	when recreational drugs commodity gets really large the script gets stuck in an infinite loop
+*/
 
 
 class Economy {
@@ -185,11 +188,11 @@ class Economy {
 		this.unemployed =			population
 		this.commodities =			new Commodities(organics, cultivable_soil, water, food, basic_commodities, luxury_goods, raw_minerals, metal_ore, refined_metal, heavy_armaments, recreational_drugs)
 		//Industry
-		this.water_industry =		new Industry("water_industry", 6,	20,	0,	new Commodities())
-		this.farming =				new Industry("farming", 6,	2,	0,	new Commodities(0,1))
-		this.light_industry =		new Industry("light_industry", 6,	8,	0,	new Commodities(1))
-		this.mining =				new Industry("mining", 6,	2,	0,	new Commodities("recreational_drugs,5"))
-		this.refining =				new Industry("refining", 6,	8,	0,	new Commodities("raw_mineral,1,metal_ore,2"))
+		this.water_industry =		new Industry("water_industry",	6,	20,	0,	new Commodities("water,1"),				new Commodities())
+		this.farming =				new Industry("farming",			6,	2,	0,	new Commodities("food,1"),				new Commodities(0,1))
+		this.light_industry =		new Industry("light_industry",	6,	8,	0,	new Commodities("basic_commodities,1"),	new Commodities(1))
+		this.mining =				new Industry("mining",			6,	2,	0,	new Commodities("metal_ore,1"),			new Commodities("recreational_drugs,5"))
+		this.refining =				new Industry("refining",		6,	8,	0,	new Commodities("refined_metal,1"),		new Commodities("raw_mineral,1,metal_ore,2"))
 	}
 
 	demand(commodity) {
@@ -402,7 +405,7 @@ class Commodities {
 
 
 class Industry {
-	constructor(name, base_productivity = 1, space_efficiency = 1, size = 0, consume = new Commodities()){
+	constructor(name, base_productivity = 1, space_efficiency = 1, size = 0, produce = new Commodities(), consume = new Commodities()){
 		this.name =					name
 		this.base_productivity =	base_productivity
 		this.productivity =			base_productivity
@@ -410,6 +413,7 @@ class Industry {
 		this.size =					size
 		this.jobs =					this.size / this.productivity
 		this.employees =			0
+		this.produce =				produce
 		this.consume =				consume
 	}
 
@@ -591,6 +595,58 @@ function supply_demand_ratio(supply, demand){
 
 
 
+function commodities_supply_demand_product(supply = new Commodities(), demand = new Commodities()){
+	const ratio = Object.values(supply.divide(demand))
+	const demand_values = Object.values(demand)
+	for (let i = 0; i < ratio.length; i++) {
+		let element = ratio[i];
+		const demand_value = demand_values[i];
+		if (demand_value === 0) {
+			ratio[i] = 1
+		}else{
+			ratio[i] = clamp(element, 0, 1)
+		}
+	}
+	return product(ratio)
+}
+
+
+
+
+function filter(data, filter_function){
+	let array
+	let keys
+	let passed = []
+	let is_object = (typeof data === "object")
+
+	if(is_object){
+		array = Array.from(Object.values(data))
+		keys = Array.from(Object.keys(data))
+	}else if(Array.isArray(data)){
+		array = Array.from(data)
+	}else{
+		if(filter_function(data)){
+			return [data]
+		}
+		return []
+	}
+
+	for (let i = 0; i < array.length; i++) {
+		const element = array[i];
+		if (filter_function(element)) {
+			if(is_object){
+				passed.push([keys[i], element])
+			}else{
+				passed.push(element)
+			}
+		}
+	}
+	return passed
+}
+
+
+
+
 function update_resources_list(economy = new Economy()){
 
 	document.getElementById("population").textContent = Math.floor(Math.log10(economy.population))
@@ -687,49 +743,29 @@ function population_interpreter(economy){
 
 
 
-function general_industry_interpreter(industry, economy, industry_production_commodity){
+function general_industry_interpreter(industry, economy){
 	console.groupCollapsed("interpreter general industry:", industry.name)
 	
+	const industry_produce = filter(industry.produce, function(n){return n > 0})[0][0]
 	const demand = economy.demand()
-	industry.size = Math.max(demand[industry_production_commodity] * 2 - economy.commodities[industry_production_commodity], 0)
+
+	industry.size = Math.max(demand[industry_produce] * 2 - economy.commodities[industry_produce], 0)
 	industry.jobs = Math.ceil(industry.size / industry.productivity)
 	if(industry.jobs < industry.employees){
 		economy.unemployed += industry.employees - industry.jobs
 		industry.employees = industry.jobs
 	}
 
-
-
-	console.groupCollapsed("for loop")
-	const commodities_consumed = industry.consume
-	let commodities_consumed_satisfaction = []
-	let commodities_consumed_keys = []
-	console.log("looping over object:", commodities_consumed)
-	for (let [key, value] of Object.entries(commodities_consumed)) {
-		console.log("key", key, "value", value)
-		if (value !== 0) {
-			const satisfaction = clamp(economy.commodities[key] / (value * industry.size), 0, 1)
-			commodities_consumed_satisfaction.push(satisfaction)
-			commodities_consumed_keys.push(key)
-		}
-	}
-	console.groupEnd()
 	
-	console.log("commodities_consumed_satisfaction",commodities_consumed_satisfaction)
-	console.log("commodities_consumed_keys",commodities_consumed_keys)
-	
-	const consume_satisfaction = commodities_consumed_satisfaction.length === 0? 1: product(commodities_consumed_satisfaction)
-
-	console.log("consume_satisfaction",consume_satisfaction)
-
-
+	const consume_satisfaction = commodities_supply_demand_product(economy.commodities, industry.consume)
 
 	const industry_total_production = industry.size * industry.get_employment_factor() * consume_satisfaction
 
-	economy.commodities[industry_production_commodity] += industry_total_production
-
-	for (let i = 0; i < commodities_consumed_keys.length; i++) {
-		const key = commodities_consumed_keys[i];
+	economy.commodities[industry_produce] += industry_total_production
+	
+	const commodities_consumed_key_value_pairs = filter(industry.consume, function(n){return n > 0})
+	for (let i = 0; i < commodities_consumed_key_value_pairs.length; i++) {
+		const key = commodities_consumed_key_value_pairs[i][0];
 		
 		economy.commodities[key] -= industry_total_production * industry.consume[key]
 
@@ -739,21 +775,6 @@ function general_industry_interpreter(industry, economy, industry_production_com
 
 }
 
-
-
-
-function water_industry_interpreter(economy){
-	
-	general_industry_interpreter(economy.water_industry, economy, "water")
-}
-
-
-
-
-function farming_interpreter(economy){
-
-	general_industry_interpreter(economy.farming, economy, "food")
-}
 
 
 
@@ -768,9 +789,9 @@ function advance_time(){
 
 	population_interpreter(economy1)
 
-	water_industry_interpreter(economy1)
+	general_industry_interpreter(economy1.water_industry, economy1, "water")
 
-	farming_interpreter(economy1)
+	general_industry_interpreter(economy1.farming, economy1, "food")
 	
 	update_resources_list(economy1)
 
