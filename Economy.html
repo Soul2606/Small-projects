@@ -178,7 +178,7 @@
 <script>
 /*
 	Bugs:
-	when recreational drugs commodity gets really large the script gets stuck in an infinite loop
+	when a commodity supply gets below the demand the script gets stuck in an infinite loop
 */
 
 
@@ -187,6 +187,7 @@ class Economy {
 		this.population =			population
 		this.unemployed =			population
 		this.commodities =			new Commodities(organics, cultivable_soil, water, food, basic_commodities, luxury_goods, raw_minerals, metal_ore, refined_metal, heavy_armaments, recreational_drugs)
+		this.max_purchase_price =	new Commodities(1,1,4,4,2,1,1,1,1,1,1)
 		//Industry
 		this.water_industry =		new Industry("water_industry",	6,	20,	0,	new Commodities("water,1"),				new Commodities())
 		this.farming =				new Industry("farming",			6,	2,	0,	new Commodities("food,1"),				new Commodities(0,1))
@@ -195,7 +196,9 @@ class Economy {
 		this.refining =				new Industry("refining",		6,	8,	0,	new Commodities("refined_metal,1"),		new Commodities("raw_mineral,1,metal_ore,2"))
 	}
 
-	demand(commodity) {
+	demand(commodity){
+		console.groupCollapsed("calculating demand")
+		console.log(this, commodity)
 		let demand = new Commodities()
 		demand.water = this.population
 		demand.food = this.population
@@ -205,6 +208,8 @@ class Economy {
 		demand = demand.add(this.light_industry.	consume.multiply(this.light_industry.	size))
 		demand = demand.add(this.mining.			consume.multiply(this.mining.			size))
 		demand = demand.add(this.refining.			consume.multiply(this.refining.			size))
+		console.log("passed demand")
+		console.groupEnd()
 		if (commodity === undefined) {
 			return demand
 		}
@@ -212,22 +217,30 @@ class Economy {
 	}
 
 	price(commodity){
-		const demand = this.demand()
+		console.groupCollapsed("calculating price")
+		console.log(this, commodity)
+		const commodities_demand = this.demand()
 		const commodities_supply = this.commodities
 
 		if (commodity !== undefined) {
-			if (demand[commodity] === 0) {
+			if (commodities_demand[commodity] === 0) {
+				console.log("passed price")
+				console.groupEnd()
 				return 0
 			}
-			return demand[commodity] / commodities_supply[commodity]
+			console.log("passed price")
+			console.groupEnd()
+			return commodities_demand[commodity] / commodities_supply[commodity]
 		}
 
 		const prices = new Commodities()
 		for(let key in commodities_supply){
-			if (demand[key] !== 0) {
-				prices[key] = demand[key] / commodities_supply[key]
+			if (commodities_demand[key] !== 0 && commodities_supply[key] !== 0) {
+				prices[key] = commodities_demand[key] / commodities_supply[key]
 			}
 		}
+		console.log("passed price")
+		console.groupEnd()
 		return prices
 	}
 
@@ -294,6 +307,8 @@ class Commodities {
 	}
 
 	clone(){
+		console.groupCollapsed("clone")
+		console.log(this)
 		const new_commodities = new Commodities()
 		new_commodities.organics = 				this.organics
 		new_commodities.cultivable_soil = 		this.cultivable_soil
@@ -306,10 +321,13 @@ class Commodities {
 		new_commodities.refined_metal = 		this.refined_metal
 		new_commodities.heavy_armaments = 		this.heavy_armaments
 		new_commodities.recreational_drugs = 	this.recreational_drugs
+		console.groupEnd()
 		return new_commodities
 	}
 
 	add(value) {
+		console.groupCollapsed("add")
+		console.log(this, value)
 		const new_commodities = this.clone()
 		if(value instanceof Commodities){
 			new_commodities.organics += 			value.organics
@@ -336,10 +354,13 @@ class Commodities {
 			new_commodities.heavy_armaments += 		value
 			new_commodities.recreational_drugs += 	value
 		}
+		console.groupEnd()
 		return new_commodities
 	}
 
 	multiply(value) {
+		console.groupCollapsed("multiply")
+		console.log("multiply", this, value)
 		const new_commodities = this.clone()
 		if(value instanceof Commodities){
 			new_commodities.organics *= 			value.organics
@@ -366,10 +387,13 @@ class Commodities {
 			new_commodities.heavy_armaments *= 		value
 			new_commodities.recreational_drugs *= 	value
 		}
+		console.groupEnd()
 		return new_commodities
 	}
 
 	divide(value) {
+		console.groupCollapsed("divide")
+		console.log("divide", this, value)
 		const new_commodities = this.clone()
 		if(value instanceof Commodities){
 			new_commodities.organics /= 			value.organics
@@ -396,6 +420,7 @@ class Commodities {
 			new_commodities.heavy_armaments /= 	value
 			new_commodities.recreational_drugs /= 	value
 		}
+		console.groupEnd()
 		return new_commodities
 	}
 
@@ -443,8 +468,13 @@ function clamp(value, min, max){
 
 
 
-function simplify(n){
-    if(n < 1000){return Math.round(n)}
+function simplify_number(n){
+	if (typeof n !== "number") {
+		throw new Error("n is not a number")
+	}
+    if(n < 1000 || n == Infinity){
+		return Math.round(n)
+	}
     let denom = 0
     const symbols = ["", "K", "M", "B", "T", "Qa", "Qu", "Sx", "Se", "Oc", "No"]
     while(n >= 1000){
@@ -648,61 +678,106 @@ function filter(data, filter_function){
 
 
 function update_resources_list(economy = new Economy()){
+	console.groupCollapsed("update_resources_list")
 
 	document.getElementById("population").textContent = Math.floor(Math.log10(economy.population))
 
 	document.getElementById("unemployment").textContent = (economy.unemployed / economy.population * 100) + "%"
 
 
-	document.getElementById("organics").textContent = simplify(economy.commodities.organics)
-	document.getElementById("cultivable-soil").textContent = simplify(economy.commodities.cultivable_soil)
-	document.getElementById("water").textContent = simplify(economy.commodities.water)
-	document.getElementById("food").textContent = simplify(economy.commodities.food)
-	document.getElementById("basic-commodities").textContent = simplify(economy.commodities.basic_commodities)
-	document.getElementById("luxury-goods").textContent = simplify(economy.commodities.luxury_goods)
-	document.getElementById("raw-minerals").textContent = simplify(economy.commodities.raw_minerals)
-	document.getElementById("metal-ore").textContent = simplify(economy.commodities.metal_ore)
-	document.getElementById("refined-metal").textContent = simplify(economy.commodities.refined_metal)
-	document.getElementById("heavy-armaments").textContent = simplify(economy.commodities.heavy_armaments)
-	document.getElementById("recreational-drugs").textContent = simplify(economy.commodities.recreational_drugs)
+	document.getElementById("organics").textContent =			simplify_number(economy.commodities.organics)
+	console.log("passed")
+	document.getElementById("cultivable-soil").textContent =	simplify_number(economy.commodities.cultivable_soil)
+	console.log("passed")
+	document.getElementById("water").textContent =				simplify_number(economy.commodities.water)
+	console.log("passed")
+	document.getElementById("food").textContent =				simplify_number(economy.commodities.food)
+	console.log("passed")
+	document.getElementById("basic-commodities").textContent =	simplify_number(economy.commodities.basic_commodities)
+	console.log("passed")
+	document.getElementById("luxury-goods").textContent =		simplify_number(economy.commodities.luxury_goods)
+	console.log("passed")
+	document.getElementById("raw-minerals").textContent =		simplify_number(economy.commodities.raw_minerals)
+	console.log("passed")
+	document.getElementById("metal-ore").textContent =			simplify_number(economy.commodities.metal_ore)
+	console.log("passed")
+	document.getElementById("refined-metal").textContent =		simplify_number(economy.commodities.refined_metal)
+	console.log("passed")
+	document.getElementById("heavy-armaments").textContent =	simplify_number(economy.commodities.heavy_armaments)
+	console.log("passed")
+	document.getElementById("recreational-drugs").textContent =	simplify_number(economy.commodities.recreational_drugs)
+	console.log("passed")
 
-	document.getElementById("organics-demand").textContent =			simplify(economy.demand("organics"))
-	document.getElementById("cultivable-soil-demand").textContent =		simplify(economy.demand("cultivable_soil"))
-	document.getElementById("water-demand").textContent =				simplify(economy.demand("water"))
-	document.getElementById("food-demand").textContent =				simplify(economy.demand("food"))
-	document.getElementById("basic-commodities-demand").textContent =	simplify(economy.demand("basic_commodities"))
-	document.getElementById("luxury-goods-demand").textContent =		simplify(economy.demand("luxury_goods"))
-	document.getElementById("raw-minerals-demand").textContent =		simplify(economy.demand("raw_minerals"))
-	document.getElementById("metal-ore-demand").textContent =			simplify(economy.demand("metal_ore"))
-	document.getElementById("refined-metal-demand").textContent =		simplify(economy.demand("refined_metal"))
-	document.getElementById("heavy-armaments-demand").textContent =		simplify(economy.demand("heavy_armaments"))
-	document.getElementById("recreational-drugs-demand").textContent =	simplify(economy.demand("recreational_drugs"))
+	document.getElementById("organics-demand").textContent =			simplify_number(economy.demand("organics"))
+	console.log("passed")
+	document.getElementById("cultivable-soil-demand").textContent =		simplify_number(economy.demand("cultivable_soil"))
+	console.log("passed")
+	document.getElementById("water-demand").textContent =				simplify_number(economy.demand("water"))
+	console.log("passed")
+	document.getElementById("food-demand").textContent =				simplify_number(economy.demand("food"))
+	console.log("passed")
+	document.getElementById("basic-commodities-demand").textContent =	simplify_number(economy.demand("basic_commodities"))
+	console.log("passed")
+	document.getElementById("luxury-goods-demand").textContent =		simplify_number(economy.demand("luxury_goods"))
+	console.log("passed")
+	document.getElementById("raw-minerals-demand").textContent =		simplify_number(economy.demand("raw_minerals"))
+	console.log("passed")
+	document.getElementById("metal-ore-demand").textContent =			simplify_number(economy.demand("metal_ore"))
+	console.log("passed")
+	document.getElementById("refined-metal-demand").textContent =		simplify_number(economy.demand("refined_metal"))
+	console.log("passed")
+	document.getElementById("heavy-armaments-demand").textContent =		simplify_number(economy.demand("heavy_armaments"))
+	console.log("passed")
+	document.getElementById("recreational-drugs-demand").textContent =	simplify_number(economy.demand("recreational_drugs"))
+	console.log("passed")
 
-	document.getElementById("organics-price").textContent =				simplify(economy.price("organics"))
-	document.getElementById("cultivable-soil-price").textContent =		simplify(economy.price("cultivable_soil"))
-	document.getElementById("water-price").textContent =				simplify(economy.price("water"))
-	document.getElementById("food-price").textContent =					simplify(economy.price("food"))
-	document.getElementById("basic-commodities-price").textContent =	simplify(economy.price("basic_commodities"))
-	document.getElementById("luxury-goods-price").textContent =			simplify(economy.price("luxury_goods"))
-	document.getElementById("raw-minerals-price").textContent =			simplify(economy.price("raw_minerals"))
-	document.getElementById("metal-ore-price").textContent =			simplify(economy.price("metal_ore"))
-	document.getElementById("refined-metal-price").textContent =		simplify(economy.price("refined_metal"))
-	document.getElementById("heavy-armaments-price").textContent =		simplify(economy.price("heavy_armaments"))
-	document.getElementById("recreational-drugs-price").textContent =	simplify(economy.price("recreational_drugs"))
+	document.getElementById("organics-price").textContent =				simplify_number(economy.price("organics"))
+	console.log("passed")
+	document.getElementById("cultivable-soil-price").textContent =		simplify_number(economy.price("cultivable_soil"))
+	console.log("passed")
+	document.getElementById("water-price").textContent =				simplify_number(economy.price("water"))
+	console.log("passed")
+	document.getElementById("food-price").textContent =					simplify_number(economy.price("food"))
+	console.log("passed")
+	document.getElementById("basic-commodities-price").textContent =	simplify_number(economy.price("basic_commodities"))
+	console.log("passed")
+	document.getElementById("luxury-goods-price").textContent =			simplify_number(economy.price("luxury_goods"))
+	console.log("passed")
+	document.getElementById("raw-minerals-price").textContent =			simplify_number(economy.price("raw_minerals"))
+	console.log("passed")
+	document.getElementById("metal-ore-price").textContent =			simplify_number(economy.price("metal_ore"))
+	console.log("passed")
+	document.getElementById("refined-metal-price").textContent =		simplify_number(economy.price("refined_metal"))
+	console.log("passed")
+	document.getElementById("heavy-armaments-price").textContent =		simplify_number(economy.price("heavy_armaments"))
+	console.log("passed")
+	document.getElementById("recreational-drugs-price").textContent =	simplify_number(economy.price("recreational_drugs"))
+	console.log("passed")
 	
 
 	document.getElementById("water-industry").textContent =	Math.round(economy.water_industry.size)
+	console.log("passed")
 	document.getElementById("farming").textContent =		Math.round(economy.farming.size)
+	console.log("passed")
 	document.getElementById("light-industry").textContent =	Math.round(economy.light_industry.size)
+	console.log("passed")
 	document.getElementById("mining").textContent =			Math.round(economy.mining.size)
+	console.log("passed")
 	document.getElementById("refining").textContent =		Math.round(economy.refining.size)
+	console.log("passed")
 
 	document.getElementById("water-industry-jobs").textContent =	economy.water_industry.employees + "/" + economy.water_industry.jobs
-	document.getElementById("farming-jobs").textContent =			economy.farming.employees + "/" + economy.farming.jobs 
-	document.getElementById("light-industry-jobs").textContent =	economy.light_industry.employees + "/" + economy.light_industry.jobs 
-	document.getElementById("mining-jobs").textContent =			economy.mining.employees + "/" + economy.mining.jobs 
-	document.getElementById("refining-jobs").textContent =			economy.refining.employees + "/" + economy.refining.jobs 
+	console.log("passed")
+	document.getElementById("farming-jobs").textContent =			economy.farming.employees + "/" + economy.farming.jobs
+	console.log("passed")
+	document.getElementById("light-industry-jobs").textContent =	economy.light_industry.employees + "/" + economy.light_industry.jobs
+	console.log("passed")
+	document.getElementById("mining-jobs").textContent =			economy.mining.employees + "/" + economy.mining.jobs
+	console.log("passed")
+	document.getElementById("refining-jobs").textContent =			economy.refining.employees + "/" + economy.refining.jobs
+	console.log("passed")
 
+	console.groupEnd()
 }
 
 
@@ -732,11 +807,17 @@ function employ_population(economy){
 
 function population_interpreter(economy){
 
-	economy.commodities.water -= supply_demand_ratio(economy.commodities.water, economy.population * 2) * economy.population
+	if(economy.price("water") <= economy.max_purchase_price.water){
+		economy.commodities.water -= Math.min(supply_demand_ratio(economy.commodities.water, economy.population * 2) * economy.population, economy.commodities.water)
+	}
 
-	economy.commodities.food -= supply_demand_ratio(economy.commodities.food, economy.population * 2) * economy.population
+	if(economy.price("food") <= economy.max_purchase_price.food){
+		economy.commodities.food -= Math.min(supply_demand_ratio(economy.commodities.food, economy.population * 2) * economy.population, economy.commodities.food)
+	}
 
-	economy.commodities.recreational_drugs -= supply_demand_ratio(economy.commodities.recreational_drugs, economy.population / 2) * economy.population / 4
+	if(economy.price("recreational_drugs") <= economy.max_purchase_price.recreational_drugs){
+		economy.commodities.recreational_drugs -= Math.min(supply_demand_ratio(economy.commodities.recreational_drugs, economy.population / 2) * economy.population / 4, economy.commodities.recreational_drugs)
+	}
 
 }
 
@@ -767,7 +848,7 @@ function general_industry_interpreter(industry, economy){
 	for (let i = 0; i < commodities_consumed_key_value_pairs.length; i++) {
 		const key = commodities_consumed_key_value_pairs[i][0];
 		
-		economy.commodities[key] -= industry_total_production * industry.consume[key]
+		economy.commodities[key] -= Math.min(industry_total_production * industry.consume[key], economy.commodities[key])
 
 	}
 
@@ -778,7 +859,7 @@ function general_industry_interpreter(industry, economy){
 
 
 
-const economy1 = new Economy(1000, 1200, 50000, 2000, 2500, 1000, 200, 0, 0, 0, 0, 500)
+const economy1 = new Economy(1000, 1200, 10, 2000, 2500, 1000, 200, 0, 0, 0, 0, 500)
 
 update_resources_list(economy1)
 
@@ -786,16 +867,19 @@ function advance_time(){
 	console.group("advance time")
 
 	employ_population(economy1)
+	console.log("employ_population passed")
 
 	population_interpreter(economy1)
+	console.log("population_interpreter passed")
 
 	general_industry_interpreter(economy1.water_industry, economy1, "water")
+	console.log("general_industry_interpreter passed")
 
 	general_industry_interpreter(economy1.farming, economy1, "food")
-	
-	update_resources_list(economy1)
+	console.log("general_industry_interpreter passed")
 
-	console.log("demand water", economy1.demand("water"))
+	update_resources_list(economy1)
+	console.log("update_resources_list passed")
 
 	console.groupEnd()
 }
