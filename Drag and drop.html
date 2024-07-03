@@ -44,6 +44,21 @@
         </div>
         <div class="drag-container single"></div>
     </div>
+    <h3>
+        Swappable
+    </h3>
+    <div class="flex">
+        <div class="drag-container single-swap">
+            <div class="draggable flex-center">
+                <label>a</label>
+            </div>
+        </div>
+        <div class="drag-container single-swap">
+            <div class="draggable flex-center">
+                <label>b</label>
+            </div>
+        </div>
+    </div>
 </body>
 <style>
 
@@ -105,8 +120,18 @@ function move_element(element){
 
     if(!mouse_down){
 
-        if(drop_destination_element && !(drop_destination_element.classList.contains("single") && drop_destination_element.firstElementChild !== null)){
-            drop_destination_element.appendChild(element)
+        if(drop_destination_element){
+            if(drop_destination_element.classList.contains("single")){
+                if(drop_destination_element.firstElementChild === null){
+                    drop_destination_element.appendChild(element)
+                }else{
+                    pickup_destination_element.appendChild(element)
+                }
+            }else if(drop_destination_element.classList.contains("single-swap")){
+                
+            }else{
+                drop_destination_element.appendChild(element)
+            }
         }else{
             pickup_destination_element.appendChild(element)
         }
