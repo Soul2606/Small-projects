@@ -8,20 +8,26 @@
 </head>
 <body>
 	<h1>Binary glyphs</h1>
-	<input type="number" name="input" id="input">
+	<input type="number" name="input" id="input" value="19">
 	<button id="submit">Submit</button>
 	<h2 id="number">100</h2>
-	<div class="flex align-end">
-		<div class="box flex row-reverse align-end" style=" text-align: right;">
-			<div class="line"></div>
-			<div class="line-small"></div>
+	<!--
+		<div class="flex">
+			<div class="box flex row-reverse align-end" style="text-align: right; height: min-content;">
+				<div class="line"></div>
+			</div>
+			<div class="line-small" style="margin-bottom: 16px; align-self: flex-end;"></div>
+			<div class="box">
+				<div class="flex align-end">
+					<div class="line"></div>
+				</div>
+				<div style="border: solid white 8px; border-radius: 8px; margin-top: 8px;"></div>
+			</div>
 		</div>
-		<div class="line-small" style="margin-bottom: -16px;"></div>
-		<div class="box flex align-end">
-			<div class="line"></div>
-			<div class="line-small"></div>
-		</div>
-	</div>
+	-->
+	<br>
+	<br>
+	<br>
 <style>
 
 .dot{
@@ -56,43 +62,41 @@
 
 
 
-function binary(value){
-	return parseInt(value.toString(2))
-}
 
 
+function to_binary(value, decimal_places){
 
+	decimal_places === undefined? decimal_places = Infinity: decimal_places += 0
 
-function to_binary(value){
 	let whole_part = value < 0? Math.ceil(value): Math.floor(value)
 
-	// toFixed is used to account for floating point inaccuracy
-	const value_length = String(value).length
-	let decimal_part = Math.abs(Number((value - whole_part).toFixed(value_length)))
+	let decimal_part = Number(decimal(Math.abs(value)))
 
-	console.log("whole part", whole_part, "decimal part", decimal_part)
-	
-	let binary_number = ""
-	
 	const binary_whole_part = whole_part.toString(2)
-	
-	let binary_decimal_part = ""
-	let failsafe = 0
-	const decimal_part_reached = []
-	while(decimal_part != 0 && failsafe < 1000 && !decimal_part_reached.includes(decimal_part)){
-		failsafe++
 
+	if(decimal_part === 0){
+		return {number:binary_whole_part, repeating_decimals:0}
+	}
+		
+	let binary_decimal_part = ""
+	let iterations = 0
+	const decimal_part_reached = []
+	while(decimal_part != 0 && !decimal_part_reached.includes(decimal_part) && iterations <= decimal_places){
+		
 		decimal_part_reached.push(decimal_part)
-		console.log(decimal_part, decimal_part_reached, binary_decimal_part)
 		decimal_part *= 2
 		let floor = Math.floor(decimal_part)
 		binary_decimal_part += floor
 		
-		// toFixed is used to account for floating point inaccuracy
-		const decimal_part_length = String(decimal_part).length
-		decimal_part = Number((decimal_part - floor).toFixed(decimal_part_length))
+		decimal_part = Number(decimal(decimal_part))
+		
+		
+		iterations++
+		if (iterations > 10000) {
+			console.warn("failsafe activated")
+			break
+		}
 	}
-	console.log("loop ended. decimal_part", decimal_part)
 
 	let repeating_decimals = 0
 	const index_of_repeated_decimal = decimal_part_reached.indexOf(decimal_part)
@@ -111,22 +115,116 @@ function to_binary(value){
 
 
 
-function create_binary_glyphs(number){
+function decimal(value){
+	const value_string = String(value)
 
+	const dot_index = value_string.indexOf(".")
+	if (dot_index === -1) {
+		return ""
+	}
+	
+	let decimal_part
+	if(value < 0){
+		decimal_part = "-0"
+	}else{
+		decimal_part = "0"
+	}
+	for (let i = dot_index; i < value_string.length; i++) {
+		const element = value_string[i];
+		decimal_part += element
+	}
+
+	return decimal_part
 }
 
 
 
 
+function create_blank_binary_glyphs(amount_of_digits) {
+    const container = document.createElement("div")
+    container.classList.add("flex", "align-end")
+
+    const box1 = document.createElement("div")
+    box1.classList.add("box", "flex", "row-reverse", "align-end")
+    box1.style = "text-align: right"
+
+	for (let i = 0; i < amount_of_digits; i++) {
+		const blank_div = document.createElement("div")
+		box1.appendChild(blank_div)
+	}
+
+    const line = document.createElement("div")
+    line.classList.add("line-small")
+	line.style = "margin-bottom: -16px;"
+
+    const box2 = document.createElement("div")
+    box2.classList.add("box", "flex", "align-end")
+
+	for (let i = 0; i < amount_of_digits; i++) {
+		const blank_div = document.createElement("div")
+		box2.appendChild(blank_div)
+	}
+
+    container.appendChild(box1)
+    container.appendChild(line)
+    container.appendChild(box2)
+
+    return container
+}
+
+
+
+
+function set_binary_glyphs(number, repeating_decimals, glyphs_element){
+	const number_string = String(Math.floor(number))
+	const number_decimal_string = decimal(number)
+	console.log(number, number_string, number_decimal_string)
+
+	const box1 = glyphs_element.childNodes[0]
+	const box2 = glyphs_element.childNodes[2]
+	
+	for (let i = 0; i < box1.childNodes.length; i++) {
+		const digit = number_string.charAt(number_string.length - i - 1)
+
+		if(digit === "1"){
+			box1.childNodes[i].className ="line"
+		}else if(digit === "0"){
+			box1.childNodes[i].className ="line-small"
+		}else{
+			box1.childNodes[i].className =""
+		}
+	}
+
+	for (let i = 0; i < box2.childNodes.length; i++) {
+		const digit = number_decimal_string.charAt(i + 2)
+		
+		if(digit === "1"){
+			box2.childNodes[i].className ="line"
+		}else if(digit === "0"){
+			box2.childNodes[i].className ="line-small"
+		}else{
+			box2.childNodes[i].className =""
+		}
+	}
+}
+
+
+
+
+const glyphs_element = create_blank_binary_glyphs(50)
+document.body.appendChild(glyphs_element)
+
 document.getElementById("submit").addEventListener("click", () => {
 	const input_value = Number(document.getElementById("input").value)
-	console.log(input_value, binary(input_value))
+
+	const binary_number_data = to_binary(input_value)
+
+	console.log(binary_number_data)
+
+	set_binary_glyphs(binary_number_data.number, binary_number_data.repeating_decimals, glyphs_element)
 
 	document.getElementById("number").textContent = input_value
 })
-
-
-console.log(to_binary(1.111))
 
 
 </script>
