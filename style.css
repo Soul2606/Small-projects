@@ -30,3 +30,7 @@ body{
 .column{
     flex-direction: column;
 }
+
+.row-reverse{
+    flex-direction: row-reverse;
+}

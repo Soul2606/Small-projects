@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<h1>Binary glyphs</h1>
+	<input type="number" name="input" id="input">
+	<button id="submit">Submit</button>
+	<h2 id="number">100</h2>
+	<div class="flex align-end">
+		<div class="box flex row-reverse align-end" style=" text-align: right;">
+			<div class="line"></div>
+			<div class="line-small"></div>
+		</div>
+		<div class="line-small" style="margin-bottom: -16px;"></div>
+		<div class="box flex align-end">
+			<div class="line"></div>
+			<div class="line-small"></div>
+		</div>
+	</div>
+<style>
+
+.dot{
+	border: solid white 8px;
+	border-radius: 50%;
+	height: 0;
+	width: 0;
+}
+
+.box{
+	width: 50%;
+	border: solid white 1px;
+	overflow: hidden;
+}
+
+.line{
+	border: solid white 8px;
+	border-radius: 8px;
+	height: 64px;
+	margin: 0 4px;
+}
+
+.line-small{
+	border: solid white 8px;
+	border-radius: 8px;
+	height: 16px;
+	margin: 0 4px;
+}
+
+</style>
+<script>
+
+
+
+function binary(value){
+	return parseInt(value.toString(2))
+}
+
+
+
+
+function to_binary(value){
+	let whole_part = value < 0? Math.ceil(value): Math.floor(value)
+
+	// toFixed is used to account for floating point inaccuracy
+	const value_length = String(value).length
+	let decimal_part = Math.abs(Number((value - whole_part).toFixed(value_length)))
+
+	console.log("whole part", whole_part, "decimal part", decimal_part)
+	
+	let binary_number = ""
+	
+	const binary_whole_part = whole_part.toString(2)
+	
+	let binary_decimal_part = ""
+	let failsafe = 0
+	const decimal_part_reached = []
+	while(decimal_part != 0 && failsafe < 1000 && !decimal_part_reached.includes(decimal_part)){
+		failsafe++
+
+		decimal_part_reached.push(decimal_part)
+		console.log(decimal_part, decimal_part_reached, binary_decimal_part)
+		decimal_part *= 2
+		let floor = Math.floor(decimal_part)
+		binary_decimal_part += floor
+		
+		// toFixed is used to account for floating point inaccuracy
+		const decimal_part_length = String(decimal_part).length
+		decimal_part = Number((decimal_part - floor).toFixed(decimal_part_length))
+	}
+	console.log("loop ended. decimal_part", decimal_part)
+
+	let repeating_decimals = 0
+	const index_of_repeated_decimal = decimal_part_reached.indexOf(decimal_part)
+
+	if(index_of_repeated_decimal === -1){
+		return {number:binary_whole_part + "." + binary_decimal_part, repeating_decimals:0}
+	}
+
+	for (let i = index_of_repeated_decimal; i < decimal_part_reached.length; i++) {
+		repeating_decimals++
+	}
+
+	return {number:binary_whole_part + "." + binary_decimal_part, repeating_decimals:repeating_decimals}
+}
+
+
+
+
+function create_binary_glyphs(number){
+
+}
+
+
+
+
+document.getElementById("submit").addEventListener("click", () => {
+	const input_value = Number(document.getElementById("input").value)
+	console.log(input_value, binary(input_value))
+
+	document.getElementById("number").textContent = input_value
+})
+
+
+console.log(to_binary(1.111))
+
+
+</script>
+</body>
+</html>
