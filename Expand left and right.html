@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+<style>
+.container {
+  display: flex;
+}
+
+.div1, .div2, .div3 {
+  padding: 10px;
+  border: 1px solid white;
+  width: 45%;
+}
+
+.div3{
+    overflow-x: scroll;
+}
+
+.div2{
+    width: 10%;
+    text-align: center;
+}
+
+.div1{
+    text-align: right;
+    overflow-x: scroll;
+    direction: rtl;
+}
+
+</style>
+</head>
+<body>
+    <div class="container">
+        <div class="div1">
+            <p>left</p>
+        </div>
+        <div class="div2">
+            <p>center</p>
+        </div>
+        <div class="div3">
+            <p>right</p>
+        </div>
+      </div>
+</body>
+</html>
