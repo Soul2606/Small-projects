@@ -1,11 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<link rel="stylesheet" href="style.css">
+<style>
+
+
+body{
+	margin: 0;
+}
+
+header{
+	padding: 15px 0;
+	border-bottom: solid white 2px;
+}
+
+.svg-debug{
+	stroke: rgb(95, 95, 95);
+	stroke-width: 2px;
+}
+
+.sidebar{
+	min-width: 250px;
+	border: solid white 2px;
+	padding-left: 5px;
+}
+
+
+</style>
 </head>
 <body>
-    
+
+	<header>
+		<button id="add-point-button">Add point</button>
+	</header>
+
+	<div class="flex">
+		<svg height="500" width="100%" id="main-svg">
+			<rect class="svg-debug" x="0" y="0" width="100%" height="100%" stroke-width="4px" fill="red" fill-opacity="0" />
+			<line class="svg-debug" x1="0%" y1="0%" x2="100%" y2="100%"/>
+			<!--Injected by script-->
+		</svg>
+		<div class="sidebar" id="sidebar">
+			<p id="sidebar-type"></p>
+			<p id="sidebar-name"></p>
+		</div>
+	</div>
+
+<script>
+
+
+
+
+
+const main_svg = document.getElementById("main-svg")
+const sidebar = document.getElementById('sidebar')
+const sidebar_type = document.getElementById('sidebar-type')
+const sidebar_name = document.getElementById('sidebar-name')
+const svgns = "http://www.w3.org/2000/svg"
+
+
+
+
+function create_point(pos_x, pos_y, name){
+    let circle = document.createElementNS(svgns, 'circle');
+    circle.setAttributeNS(null, 'cx', pos_x);
+    circle.setAttributeNS(null, 'cy', pos_y);
+    circle.setAttributeNS(null, 'r', '8px');
+    circle.setAttributeNS(null, 'fill-opacity', '0');
+    circle.setAttributeNS(null, 'stroke-width', '4px');
+    circle.setAttributeNS(null, 'stroke', 'white');
+	circle.addEventListener("click", ()=>{
+		select(name, 'point')
+	})
+	return circle
+}
+
+
+
+
+function select(name, type){
+	sidebar_name.textContent = name
+	sidebar_type.textContent = type
+}
+
+
+
+
+document.getElementById("add-point-button").addEventListener("click", ()=>{
+    main_svg.appendChild(create_point(250, 250, "a"));
+})
+
+
+
+
+
+</script>
 </body>
 </html>
