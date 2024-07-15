@@ -802,19 +802,20 @@ function employ_population(economy){
 
 function population_interpreter(economy){
 
-	let satisfaction = 1
+	let satisfaction = 0
 	for(let key in economy.consume){
 		if(economy.price(key) <= economy.max_purchase_price[key]){
 		economy.commodities[key] -= Math.min(supply_demand_ratio(economy.commodities[key], economy.population * 2) * economy.population, economy.commodities[key])
 		}
 
 		if(economy.consume[key] > 0){
-			satisfaction *= clamp(economy.commodities[key] / economy.consume[key], 0, 1)
+			satisfaction += clamp(economy.commodities[key] / (economy.consume[key] * economy.population), -1, 1)
 		}
 	}
 
 	economy.commodities = economy.commodities.add(economy.produce.multiply(economy.population))
 
+	economy.unemployed += economy.population * softsign2(satisfaction - 0.5, 0.8, 1.2) - economy.population
 	economy.population *= softsign2(satisfaction - 0.5, 0.8, 1.2)
 
 }
@@ -825,7 +826,7 @@ function population_interpreter(economy){
 function general_industry_interpreter(industry, economy){
 	console.group("interpreter general industry:", industry.name)
 	
-	// Script can only handle one or none industry produce commodity
+	// Script can only handle one or none industry produce commodities
 	const industry_produce = filter(industry.produce, function(n){return n > 0})[0][0]
 	const demand = economy.demand()
 
