@@ -193,13 +193,14 @@
 
 
 class Economy {
-	constructor(population, organics, cultivable_soil, water, food, basic_commodities, luxury_goods, raw_minerals, metal_ore, refined_metal, heavy_armaments, recreational_drugs){
+	constructor(population, organics, cultivable_soil, water, food, basic_commodities, luxury_goods, raw_minerals, metal_ore, refined_metal, heavy_armaments, recreational_drugs, available_space){
 		this.population =			population
 		this.unemployed =			population
 		this.commodities =			new Commodities(organics, cultivable_soil, water, food, basic_commodities, luxury_goods, raw_minerals, metal_ore, refined_metal, heavy_armaments, recreational_drugs)
 		this.max_purchase_price =	new Commodities(1,1,4,4,2,1,1,1,1,1,1)
 		this.produce =				new Commodities(2,4,4,0,0,0,0,0,0,0,0)
 		this.consume =				new Commodities(0,0,4,4,2,1,0,0,0,0,1)
+		this.available_space =		available_space
 		//Industry
 		this.water_industry =			new Industry("water_industry",	12,	20,	0,	new Commodities("water,1"),				new Commodities())
 		this.farming =					new Industry("farming",			12,	2,	0,	new Commodities("food,1"),				new Commodities(0,1))
@@ -442,12 +443,13 @@ class Industry {
 		this.consume =				consume
 	}
 
-	get_employment_factor() {
+	get_employment_factor(){
 		let employees_per_job = this.employees / this.jobs
 		isNaN(employees_per_job)? employees_per_job = 0:
 		isFinite(employees_per_job)? do_nothing():employees_per_job = 0
 		return employees_per_job
 	}
+
 }
 
 
@@ -473,7 +475,7 @@ function simplify_number(n){
 		throw new Error("n is not a number")
 	}
     if(n < 1000 || n == Infinity){
-		return Math.round(n)
+		return n.toFixed(2)
 	}
     let denom = 0
     const symbols = ["", "K", "M", "B", "T", "Qa", "Qu", "Sx", "Se", "Oc", "No"]
@@ -696,7 +698,7 @@ function update_resources_list(economy = new Economy()){
 
 	document.getElementById("population").textContent = Math.floor(Math.log10(economy.population))
 
-	document.getElementById("unemployment").textContent = (economy.unemployed / economy.population * 100) + "%"
+	document.getElementById("unemployment").textContent = (economy.unemployed / economy.population * 100).toFixed(2) + "%"
 	
 	document.getElementById("population-consume").textContent = economy.consume.to_string()
 
@@ -741,11 +743,11 @@ function update_resources_list(economy = new Economy()){
 	
 
 
-	document.getElementById("water-industry").textContent =	Math.round(economy.water_industry.size)
-	document.getElementById("farming").textContent =		Math.round(economy.farming.size)
-	document.getElementById("light-industry").textContent =	Math.round(economy.light_industry.size)
-	document.getElementById("mining").textContent =			Math.round(economy.mining.size)
-	document.getElementById("refining").textContent =		Math.round(economy.refining.size)
+	document.getElementById("water-industry").textContent =	simplify_number(economy.water_industry.size)
+	document.getElementById("farming").textContent =		simplify_number(economy.farming.size)
+	document.getElementById("light-industry").textContent =	simplify_number(economy.light_industry.size)
+	document.getElementById("mining").textContent =			simplify_number(economy.mining.size)
+	document.getElementById("refining").textContent =		simplify_number(economy.refining.size)
 
 	document.getElementById("water-industry-jobs").textContent =	economy.water_industry.employees + "/" + economy.water_industry.jobs
 	document.getElementById("farming-jobs").textContent =			economy.farming.employees + "/" + economy.farming.jobs
@@ -753,11 +755,11 @@ function update_resources_list(economy = new Economy()){
 	document.getElementById("mining-jobs").textContent =			economy.mining.employees + "/" + economy.mining.jobs
 	document.getElementById("refining-jobs").textContent =			economy.refining.employees + "/" + economy.refining.jobs
 
-	document.getElementById("water-industry-productivity").textContent =	economy.water_industry.productivity
-	document.getElementById("farming-productivity").textContent =			economy.farming.productivity
-	document.getElementById("light-industry-productivity").textContent =	economy.light_industry.productivity
-	document.getElementById("mining-productivity").textContent =			economy.mining.productivity
-	document.getElementById("refining-productivity").textContent =			economy.refining.productivity
+	document.getElementById("water-industry-productivity").textContent =	economy.water_industry.productivity.toFixed(2)
+	document.getElementById("farming-productivity").textContent =			economy.farming.productivity.toFixed(2)
+	document.getElementById("light-industry-productivity").textContent =	economy.light_industry.productivity.toFixed(2)
+	document.getElementById("mining-productivity").textContent =			economy.mining.productivity.toFixed(2)
+	document.getElementById("refining-productivity").textContent =			economy.refining.productivity.toFixed(2)
 
 	document.getElementById("water-industry-produce").textContent =	economy.water_industry.produce.to_string()
 	document.getElementById("farming-produce").textContent =		economy.farming.produce.to_string()
@@ -800,15 +802,20 @@ function employ_population(economy){
 
 function population_interpreter(economy){
 
+	let satisfaction = 1
 	for(let key in economy.consume){
 		if(economy.price(key) <= economy.max_purchase_price[key]){
 		economy.commodities[key] -= Math.min(supply_demand_ratio(economy.commodities[key], economy.population * 2) * economy.population, economy.commodities[key])
 		}
+
+		if(economy.consume[key] > 0){
+			satisfaction *= clamp(economy.commodities[key] / economy.consume[key], 0, 1)
+		}
 	}
 
-	for(let key in economy.produce){
-		economy.commodities[key] += economy.produce[key]
-	}
+	economy.commodities = economy.commodities.add(economy.produce.multiply(economy.population))
+
+	economy.population *= softsign2(satisfaction - 0.5, 0.8, 1.2)
 
 }
 
@@ -825,15 +832,15 @@ function general_industry_interpreter(industry, economy){
 
 	let consume_price_sum = 0
 	for (const key in industry.consume) {
-		if(industry.consume[key] > 0){
-			consume_price_sum += economy.price(key) * industry.size
+		if(industry.consume[key] > 0 && !isNaN(economy.price(key) * industry.size)){
+			consume_price_sum += economy.price(key)
 		}
 	}
 	
-	console.log("consume_price_sum", consume_price_sum)
+	console.log(industry.consume, economy.price(industry_produce), industry_produce, consume_price_sum, industry.employees)
 
-	industry.size += (economy.price(industry_produce) - consume_price_sum - industry.employees)
-	industry.size = Math.max(demand[industry_produce] * 2 - economy.commodities[industry_produce], 0)
+	industry.size += (economy.price(industry_produce) * economy.demand(industry_produce) - consume_price_sum - industry.employees - industry.size/economy.available_space*industry.space_efficiency)
+	industry.size = Math.max(industry.size, 0)
 	industry.jobs = Math.ceil(industry.size / industry.productivity)
 	if(industry.jobs < industry.employees){
 		economy.unemployed += industry.employees - industry.jobs
@@ -866,7 +873,7 @@ function general_industry_interpreter(industry, economy){
 
 
 
-const economy1 = new Economy(1000, 1200, 50000, 2000, 2500, 1000, 200, 0, 0, 0, 0, 500)
+const economy1 = new Economy(1000, 1200, 50000, 2000, 2500, 1000, 200, 0, 0, 0, 0, 500, 100000)
 
 update_resources_list(economy1)
 
