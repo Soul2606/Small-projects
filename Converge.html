@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+<style>
+
+.input-blend{
+    background-color: rgba(255, 255, 255, 15%);
+    border: none;
+    color: white;
+}
+
+
+</style>
+</head>
+<body>
+
+    <p>Iterating through this equation the value may converge or diverge to infinity.</p>
+
+    <label>Value =</label>
+    <input type="number" id="input-constant-number" value="1" min="-9" max="9" class="input-blend" style="width: 30px;">
+    <label>+ Value *</label>
+    <input type="number" id="input-number" value="50" min="-999" max="999" class="input-blend" style="width: 50px;">
+    <label>%</label>
+    <br>
+    <br>
+    <button id="submit-button">Submit</button>
+
+    <p id="value">Value:0</p>
+
+
+<script>
+
+
+const submit_button_element = document.getElementById("submit-button")
+const value_element = document.getElementById("value")
+
+
+
+
+submit_button_element.addEventListener("click", ()=>{
+
+    const multiplier_value = Number(document.getElementById("input-number").value) / 100
+    const constant_value = Number(document.getElementById("input-constant-number").value)
+    const iterate = 10000
+    let value = 0
+    
+    for (let i = 0; i < iterate; i++) {
+        value = constant_value + value * multiplier_value
+    }
+
+    console.log(value)
+
+    if (multiplier_value >= 1) {
+        value_element.textContent = "Value:Infinity"
+    }else{
+        value_element.textContent = "Value:" + value
+    }
+
+})
+
+</script>
+
+    <br>
+    <br>
+    <br>
+    <br>
+
+    <p>This can also happen when two variables are effecting each other</p>
+
+    <label>Variable_1 =</label>
+    <input type="number" id="input2-variable1-constant-number" value="1" min="-9" max="9" class="input-blend" style="width: 30px;">
+    <label>+ Variable_2 *</label>
+    <input type="number" id="input2-variable1-multiplier-number" value="100" min="-999" max="999" class="input-blend" style="width: 50px;">
+    <label>%</label>
+
+    <br><br>
+
+    <label>Variable_2 =</label>
+    <input type="number" id="input2-variable2-constant-number" value="0" min="-9" max="9" class="input-blend" style="width: 30px;">
+    <label>+ Variable_1 *</label>
+    <input type="number" id="input2-variable2-multiplier-number" value="50" min="-999" max="999" class="input-blend" style="width: 50px;">
+    <label>%</label>
+
+    <br><br>
+
+    <button id="submit-button2">Submit</button>
+
+    <p id="part2-variable1">Variable_1:0</p>
+    <p id="part2-variable2">Variable_2:0</p>
+
+<script>
+
+document.getElementById("submit-button2").addEventListener("click", ()=>{
+
+    
+    let variable_1 = 0
+    const variable_1_constant = Number(document.getElementById("input2-variable1-constant-number").value)
+    const variable_1_multiplier = Number(document.getElementById("input2-variable1-multiplier-number").value) / 100
+    
+    let variable_2 = 0
+    const variable_2_constant = Number(document.getElementById("input2-variable2-constant-number").value)
+    const variable_2_multiplier = Number(document.getElementById("input2-variable2-multiplier-number").value) / 100
+    
+    console.log("variable_1_constant", variable_1_constant,"variable_1_multiplier", variable_1_multiplier,"variable_2_constant", variable_2_constant,"variable_2_multiplier", variable_2_multiplier)
+
+    for (let i = 0; i < 10000; i++) {
+        
+        variable_1 = variable_1_constant + variable_2 * variable_1_multiplier
+        variable_2 = variable_2_constant + variable_1 * variable_2_multiplier
+
+    }
+
+    console.log("variable_1", variable_1)
+    console.log("variable_2", variable_2)
+
+    document.getElementById("part2-variable1").textContent = "Variable_1:" + variable_1
+    document.getElementById("part2-variable2").textContent = "Variable_2:" + variable_2
+
+})
+
+</script>
+
+    <br>
+    <br>
+    <br>
+    <br>
+
+    <p>With differential its more complicated</p>
+
+    <label>Variable_1 +=</label>
+    <input type="number" id="part3-variable1-constant-number" value="1" min="-9" max="9" class="input-blend" style="width: 30px;">
+    <label>- Variable_1 *</label>
+    <input type="number" id="part3-variable1-multiplier-number" value="150" min="-999" max="999" class="input-blend" style="width: 50px;">
+    <label>%</label>
+
+    <br><br>
+    
+    <button id="part3-submit">Submit</button>
+    
+    <br><br>
+
+    <p id="part3-variable1">Variable_1:0</p>
+
+<script>
+
+document.getElementById("part3-submit").addEventListener("click", ()=>{
+
+    let variable_1 = 0
+    const variable_1_constant = Number(document.getElementById("part3-variable1-constant-number").value)
+    const variable_1_multiplier = Number(document.getElementById("part3-variable1-multiplier-number").value) / 100
+
+    for (let i = 0; i < 1000000; i++) {
+        
+        variable_1 += variable_1_constant - variable_1 * variable_1_multiplier
+
+    }
+
+    document.getElementById("part3-variable1").textContent = "Variable_1:" + variable_1
+
+    console.log(variable_1)
+
+})
+    
+</script>
+
+    <br>
+    <br>
+    <br>
+    <br>
+
+    <p>Two differential equations that depend on each other</p>
+
+    <label>Variable_1 +=</label>
+    <input type="number" id="part4-variable1-constant-number" value="1" min="-9" max="9" class="input-blend" style="width: 30px;">
+    <label>- Variable_1 + Variable_2 *</label>
+    <input type="number" id="part4-variable1-multiplier-number" value="50" min="-999" max="999" class="input-blend" style="width: 50px;">
+    <label>%</label>
+
+    <br><br>
+
+    <label>Variable_2 +=</label>
+    <input type="number" id="part4-variable2-constant-number" value="0" min="-9" max="9" class="input-blend" style="width: 30px;">
+    <label>- Variable_2 + Variable_1 *</label>
+    <input type="number" id="part4-variable2-multiplier-number" value="50" min="-999" max="999" class="input-blend" style="width: 50px;">
+    <label>%</label>
+
+    <br><br>
+
+    <button id="part4-submit">Submit</button>
+
+    <p id="part4-variable1">Variable_1:0</p>
+    <p id="part4-variable2">Variable_2:0</p>
+
+<script>
+
+document.getElementById("part4-submit").addEventListener("click", ()=>{
+
+    let variable_1 = 0
+    const variable_1_constant = Number(document.getElementById("part4-variable1-constant-number").value)
+    const variable_1_multiplier = Number(document.getElementById("part4-variable1-multiplier-number").value) / 100
+
+    let variable_2 = 0
+    const variable_2_constant = Number(document.getElementById("part4-variable2-constant-number").value)
+    const variable_2_multiplier = Number(document.getElementById("part4-variable2-multiplier-number").value) / 100
+
+    console.log("variable_1_constant", variable_1_constant,"variable_1_multiplier", variable_1_multiplier,"variable_2_constant", variable_2_constant,"variable_2_multiplier", variable_2_multiplier)
+
+    for (let i = 0; i < 10000; i++) {
+        
+        variable_1 += variable_1_constant - variable_1 + variable_2 * variable_1_multiplier
+        variable_2 += variable_1_constant - variable_2 + variable_1 * variable_1_multiplier
+
+    }
+
+    document.getElementById("part4-variable1").textContent = "Variable_1:" + variable_1
+    document.getElementById("part4-variable2").textContent = "Variable_2:" + variable_2
+
+    console.log(variable_1)
+
+})
+    
+</script>
+
+</body>
+</html>
