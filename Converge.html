@@ -18,6 +18,10 @@
 </head>
 <body>
 
+    <p>When making simulations its important to make the variables stable and not explode in to massive numbers. This can be tricky especially if the variables contain them self. </p>
+
+    <br>
+    
     <p>Iterating through this equation the value may converge or diverge to infinity.</p>
 
     <label>Value =</label>
@@ -212,7 +216,7 @@ document.getElementById("part4-submit").addEventListener("click", ()=>{
     for (let i = 0; i < 10000; i++) {
         
         variable_1 += variable_1_constant - variable_1 + variable_2 * variable_1_multiplier
-        variable_2 += variable_1_constant - variable_2 + variable_1 * variable_1_multiplier
+        variable_2 += variable_2_constant - variable_2 + variable_1 * variable_2_multiplier
 
     }
 
@@ -223,6 +227,64 @@ document.getElementById("part4-submit").addEventListener("click", ()=>{
 
 })
     
+</script>
+
+    <br>
+    <br>
+    <br>
+    <br>
+
+    <p>Two differential equations where one is a differential and the other is not</p>
+
+    <label>Variable_1 +=</label>
+    <input type="number" id="part5-variable1-constant-number" value="1" min="-9" max="9" class="input-blend" style="width: 30px;">
+    <label>- Variable_1 + Variable_2 *</label>
+    <input type="number" id="part5-variable1-multiplier-number" value="50" min="-999" max="999" class="input-blend" style="width: 50px;">
+    <label>%</label>
+
+    <br><br>
+
+    <label>Variable_2 =</label>
+    <input type="number" id="part5-variable2-constant-number" value="0" min="-9" max="9" class="input-blend" style="width: 30px;">
+    <label>+ Variable_1 *</label>
+    <input type="number" id="part5-variable2-multiplier-number" value="50" min="-999" max="999" class="input-blend" style="width: 50px;">
+    <label>%</label>
+
+    <br><br>
+
+    <button id="part5-submit">Submit</button>
+
+    <p id="part5-variable1">Variable_1:0</p>
+    <p id="part5-variable2">Variable_2:0</p>
+
+<script>
+
+document.getElementById("part5-submit").addEventListener("click", ()=>{
+
+    let variable_1 = 0
+    const variable_1_constant = Number(document.getElementById("part5-variable1-constant-number").value)
+    const variable_1_multiplier = Number(document.getElementById("part5-variable1-multiplier-number").value) / 100
+
+    let variable_2 = 0
+    const variable_2_constant = Number(document.getElementById("part5-variable2-constant-number").value)
+    const variable_2_multiplier = Number(document.getElementById("part5-variable2-multiplier-number").value) / 100
+
+    console.log("variable_1_constant", variable_1_constant,"variable_1_multiplier", variable_1_multiplier,"variable_2_constant", variable_2_constant,"variable_2_multiplier", variable_2_multiplier)
+
+    for (let i = 0; i < 10000; i++) {
+        
+        variable_1 += variable_1_constant - variable_1 + variable_2 * variable_1_multiplier
+        variable_2 = variable_2_constant + variable_1 * variable_2_multiplier
+
+    }
+
+    document.getElementById("part5-variable1").textContent = "Variable_1:" + variable_1
+    document.getElementById("part5-variable2").textContent = "Variable_2:" + variable_2
+
+    console.log(variable_1)
+
+})
+
 </script>
 
 </body>
