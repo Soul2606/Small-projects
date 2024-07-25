@@ -34,7 +34,10 @@ header{
 <body>
 
 	<header>
-		<button id="add-point-button">Add point</button>
+		<div class="flex">
+			<button id="add-point-button">Add point</button>
+			<p id="debug-current-action"></p>
+		</div>
 	</header>
 
 	<div class="flex">
@@ -44,8 +47,9 @@ header{
 			<!--Injected by script-->
 		</svg>
 		<div class="sidebar" id="sidebar">
-			<p id="sidebar-type"></p>
-			<p id="sidebar-name"></p>
+			<p id="sidebar-type">none</p>
+			<p id="sidebar-name">none</p>
+			<button id="add-line-button">Add line</button>
 		</div>
 	</div>
 
@@ -60,30 +64,106 @@ const sidebar = document.getElementById('sidebar')
 const sidebar_type = document.getElementById('sidebar-type')
 const sidebar_name = document.getElementById('sidebar-name')
 const svgns = "http://www.w3.org/2000/svg"
+const mouse_position = {x:0,y:0}
+
+let current_action = "none"
+let selected_object
+let drag_point_interval_id
+
+
+
+
+setInterval(()=>{
+	document.getElementById("debug-current-action").textContent = current_action
+})
+
+
+
+
+main_svg.addEventListener("mousemove", (e)=>{
+	mouse_position.x = e.offsetX
+	mouse_position.y = e.offsetY
+})
+
+
+
+
+function get_point_position(point){
+	console.log(point.cx.baseVal.value, point.cy.baseVal.value)
+	return{x:point.cx.baseVal.value, y:point.cy.baseVal.value}
+}
+
+
+
+
+function drag_point(point){
+	point.cx.baseVal.value = mouse_position.x
+	point.cy.baseVal.value = mouse_position.y
+}
 
 
 
 
 function create_point(pos_x, pos_y, name){
-    let circle = document.createElementNS(svgns, 'circle');
-    circle.setAttributeNS(null, 'cx', pos_x);
-    circle.setAttributeNS(null, 'cy', pos_y);
-    circle.setAttributeNS(null, 'r', '8px');
-    circle.setAttributeNS(null, 'fill-opacity', '0');
-    circle.setAttributeNS(null, 'stroke-width', '4px');
-    circle.setAttributeNS(null, 'stroke', 'white');
+    const circle = document.createElementNS(svgns, 'circle')
+    circle.setAttributeNS(null, 'cx', pos_x)
+    circle.setAttributeNS(null, 'cy', pos_y)
+    circle.setAttributeNS(null, 'r', '8px')
+    circle.setAttributeNS(null, 'fill', 'rgb(29, 31, 37)')
+    circle.setAttributeNS(null, 'stroke-width', '4px')
+    circle.setAttributeNS(null, 'stroke', 'white')
 	circle.addEventListener("click", ()=>{
-		select(name, 'point')
+		if(current_action === "add_line"){
+			const pos_1 = get_point_position(circle)
+			const pos_2 = get_point_position(selected_object)
+			main_svg.appendChild(create_line(pos_1.x, pos_1.y, pos_2.x, pos_2.y))
+			current_action = "none"
+		}
+		select(name, 'point', circle)
 	})
+
+
+	circle.addEventListener("mousedown", ()=>{
+		if(current_action === "none"){
+			current_action = "drag_point"
+			drag_point_interval_id = setInterval(drag_point, 10, circle)
+		}
+	})
+
+
+	circle.addEventListener("mouseup", ()=>{
+		if(current_action === "drag_point"){
+			current_action = "none"
+			clearInterval(drag_point_interval_id)
+		}
+	})
+
+
 	return circle
 }
 
 
 
 
-function select(name, type){
+function create_line(x1, y1, x2, y2){
+	const line = document.createElementNS(svgns, "line")
+	line.setAttributeNS(null, "x1", x1)
+	line.setAttributeNS(null, "y1", y1)
+	line.setAttributeNS(null, "x2", x2)
+	line.setAttributeNS(null, "y2", y2)
+	line.setAttributeNS(null, 'stroke-width', '4px')
+	line.setAttributeNS(null, 'stroke', 'white')
+	return line
+}
+
+
+
+
+function select(name, type, element){
 	sidebar_name.textContent = name
 	sidebar_type.textContent = type
+	selected_object = element
+	console.log(selected_object)
 }
 
 
@@ -91,6 +171,22 @@ function select(name, type){
 
 document.getElementById("add-point-button").addEventListener("click", ()=>{
     main_svg.appendChild(create_point(250, 250, "a"));
+})
+
+
+
+
+document.getElementById("add-line-button").addEventListener("click", ()=>{
+
+	const position = get_point_position(selected_object)
+	console.log(position.x, position.y)
+
+	if(current_action = "none"){
+		
+		current_action = "add_line"
+
+	}
+
 })
 
 
