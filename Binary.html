@@ -8,39 +8,37 @@
 </head>
 <body>
 	<h1>Binary glyphs</h1>
-	<input type="number" name="input" id="input" value="19">
-	<button id="submit">Submit</button>
-	<h2 id="number">100</h2>
-	<!--
-		<div class="flex">
-			<div class="box flex row-reverse align-end" style="text-align: right; height: min-content;">
-				<div class="line"></div>
-			</div>
-			<div class="line-small" style="margin-bottom: 16px; align-self: flex-end;"></div>
-			<div class="box">
-				<div class="flex align-end">
-					<div class="line"></div>
-				</div>
-				<div style="border: solid white 8px; border-radius: 8px; margin-top: 8px;"></div>
-			</div>
-		</div>
-	-->
+	<input type="number" id="input" value="19">
+	<button id="submit">Set</button>
+	<input type="number" id="auto-increment" value="0.1">
+	<button id="add-button">Add</button>
+	<button id="auto">Auto</button>
+	<h2 id="number" style="text-align: center;">100</h2>
 	<br>
 	<br>
 	<br>
 <style>
 
-.dot{
+.decimal-point{
 	border: solid white 8px;
-	border-radius: 50%;
-	height: 0;
+	border-radius: 8px;
+	height: 16px;
 	width: 0;
+	margin-top: 72px;
 }
 
 .box{
 	width: 50%;
 	border: solid white 1px;
 	overflow: hidden;
+}
+
+.box-grid{
+	width: 45%;
+	display: grid;
+	grid-template-rows: auto auto;
+	align-items: flex-end;
+	align-content: space-between;
 }
 
 .line{
@@ -55,6 +53,20 @@
 	border-radius: 8px;
 	height: 16px;
 	margin: 0 4px;
+}
+
+.line-group-line{
+	grid-row: 1/2;
+	border: solid white 8px;
+	border-radius: 8px;
+	margin: 0 4px; 
+}
+
+.underline{
+	border: solid white 8px;
+	border-radius: 8px;
+	margin: 8px 4px 0 4px;
+	grid-row: 2/3;
 }
 
 </style>
@@ -142,31 +154,38 @@ function decimal(value){
 
 function create_blank_binary_glyphs(amount_of_digits) {
     const container = document.createElement("div")
-    container.classList.add("flex", "align-end")
+    container.className = "flex"
+	container.style = "overflow-x: scroll;"
 
     const box1 = document.createElement("div")
-    box1.classList.add("box", "flex", "row-reverse", "align-end")
-    box1.style = "text-align: right"
+    box1.className = "box-grid"
+    box1.style = "text-align: right; height: min-content; justify-content: end;"
 
 	for (let i = 0; i < amount_of_digits; i++) {
 		const blank_div = document.createElement("div")
+		blank_div.style = "grid-row: 1/2; grid-column: "+(amount_of_digits-i+1)+"/"+(amount_of_digits-i)+";"
 		box1.appendChild(blank_div)
 	}
 
-    const line = document.createElement("div")
-    line.classList.add("line-small")
-	line.style = "margin-bottom: -16px;"
-
+    const decimal_point = document.createElement("div")
+    decimal_point.className = "decimal-point"
+	
     const box2 = document.createElement("div")
-    box2.classList.add("box", "flex", "align-end")
+    box2.className = "box-grid"
+	box2.style = "justify-content: start;"
 
 	for (let i = 0; i < amount_of_digits; i++) {
 		const blank_div = document.createElement("div")
+		blank_div.style = "grid-row: 1/2; grid-column: "+(i+1)+"/"+(i+2)+";"
 		box2.appendChild(blank_div)
 	}
+	const underline_element = document.createElement("div")
+	underline_element.className = "underline"
+	underline_element.style = "display: none;"
+	box2.appendChild(underline_element)
 
     container.appendChild(box1)
-    container.appendChild(line)
+    container.appendChild(decimal_point)
     container.appendChild(box2)
 
     return container
@@ -177,8 +196,7 @@ function create_blank_binary_glyphs(amount_of_digits) {
 
 function set_binary_glyphs(number, repeating_decimals, glyphs_element){
 	const number_string = String(Math.floor(number))
-	const number_decimal_string = decimal(number)
-	console.log(number, number_string, number_decimal_string)
+	const number_decimal_string = decimal(number).substring(2)
 
 	const box1 = glyphs_element.childNodes[0]
 	const box2 = glyphs_element.childNodes[2]
@@ -196,7 +214,14 @@ function set_binary_glyphs(number, repeating_decimals, glyphs_element){
 	}
 
 	for (let i = 0; i < box2.childNodes.length; i++) {
-		const digit = number_decimal_string.charAt(i + 2)
+		const digit = number_decimal_string.charAt(i)
+
+		if(box2.childNodes[i].className === "underline"){
+			if(repeating_decimals !== 0){
+				box2.childNodes[i].style = "grid-column: "+(number_decimal_string.length-repeating_decimals+1)+"/"+(number_decimal_string.length+1)+";"
+			}
+			continue
+		}
 		
 		if(digit === "1"){
 			box2.childNodes[i].className ="line"
@@ -207,6 +232,11 @@ function set_binary_glyphs(number, repeating_decimals, glyphs_element){
 		}
 	}
 }
+
+
+
+
+const number_display_element = document.getElementById("number")
 
 
 
@@ -223,7 +253,66 @@ document.getElementById("submit").addEventListener("click", () => {
 
 	set_binary_glyphs(binary_number_data.number, binary_number_data.repeating_decimals, glyphs_element)
 
-	document.getElementById("number").textContent = input_value
+	number_display_element.textContent = input_value
+})
+
+
+
+
+let set_interval_id
+
+const auto_button = document.getElementById("auto")
+
+auto_button.addEventListener("click", ()=>{
+
+	if(set_interval_id !== undefined){
+		auto_button.textContent = "Auto"
+		clearInterval(set_interval_id)
+		set_interval_id = undefined
+		return
+	}
+	auto_button.textContent = "Stop"
+
+	const input_value = Number(document.getElementById("input").value)
+
+	let value = input_value
+	const value_increment = Number(document.getElementById("auto-increment").value)
+
+	set_interval_id = setInterval(()=>{
+		
+		const binary_number_data = to_binary(value)
+		
+		set_binary_glyphs(binary_number_data.number, binary_number_data.repeating_decimals, glyphs_element)
+
+		value = Number((value + value_increment).toFixed(decimal(value_increment).length))
+
+		number_display_element.textContent = value
+	}, 10)
+})
+
+
+
+
+const add_button = document.getElementById("add-button")
+
+add_button.addEventListener("click", ()=>{
+	if(set_interval_id !== undefined){
+		console.log("no")
+		return
+	}
+	console.log("hello")
+
+	let value = Number(number_display_element.textContent)
+	const value_increment = Number(document.getElementById("auto-increment").value)
+
+
+	value = Number((value + value_increment).toFixed(decimal(value_increment).length))
+
+	const binary_number_data = to_binary(value)
+		
+	set_binary_glyphs(binary_number_data.number, binary_number_data.repeating_decimals, glyphs_element)
+
+	number_display_element.textContent = value
 })
 
 
