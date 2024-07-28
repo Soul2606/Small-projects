@@ -14,11 +14,20 @@ body{
 	box-sizing: border-box;
 }
 
+.line-box{
+	position: absolute;
+	width: 100%;
+}
+
+.line-box:hover{
+	cursor: pointer;
+}
+
 .line{
 	border: solid rgb(124, 207, 255) 1px;
 	width: 100%;
-	position: absolute;
 	height: 0;
+	margin: 10px 0;
 }
 
 .circle-text{
