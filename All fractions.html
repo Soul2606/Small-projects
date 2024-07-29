@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<link rel="stylesheet" href="style.css">
+<style>
+
+.input-blend{
+	background-color: rgba(255, 255, 255, 15%);
+	border: none;
+	color: white;
+}
+
+p{text-align: center;}
+
+</style>
+</head>
+<body>
+
+	<div class="flex align-center">
+		<p>List of every number</p>
+		<div style="margin: 0 8px;">
+			<p style="margin: 0 2px;">p</p>
+			<div style="border: solid white 1px;"></div>
+			<p style="margin: 0 2px;">q</p>
+		</div>
+		<p>where p &cup; q &isin; &#x2124;, 0 &le; p &le; q &le;</p>
+		<input id="upper-bound" class="input-blend" type="number" value="1" min="0" style="width: 50px; margin: 0 8px;">
+	</div>
+
+	<button id="submit">Submit</button>
+
+	<div id="output" class="flex align-center wrap"></div>
+
+<script>
+
+
+const isPrime = num => {
+for(let i = 2, s = Math.sqrt(num); i <= s; i++) {
+if(num % i === 0) return false;
+}
+return num > 1;
+}
+
+
+
+
+class Fraction{
+	constructor(numerator = 0, denominator = 1){
+		this.numerator = numerator
+		this.denominator = denominator
+	}
+
+	clone(){
+		return new Fraction(this.numerator, this.denominator)
+	}
+
+	solve(){
+		return this.numerator / this.denominator
+	}
+
+	simplify() {
+		const gcd = (a, b) => {
+			// Euclidean algorithm to find GCD
+			if (b === 0) {
+				return a
+			} else {
+				return gcd(b, a % b)
+			}
+		}
+
+		const divisor = gcd(this.numerator, this.denominator)
+
+		this.numerator /= divisor
+		this.denominator /= divisor
+
+		return this
+	}
+
+	improper(){
+		const multiplier = Math.floor(this.numerator / this.denominator)
+
+		this.numerator -= multiplier * this.denominator
+
+		this.simplify()
+
+		return multiplier
+	}
+
+	add(value){
+		const new_fraction = this.clone()
+
+		if (value instanceof Fraction) {
+
+			const new_value_fraction = value.clone()
+			const this_denominator = this.denominator
+
+			new_fraction.numerator *= new_value_fraction.denominator
+			new_fraction.denominator *= new_value_fraction.denominator
+
+			new_value_fraction.numerator *= this_denominator
+			new_value_fraction.denominator *= this_denominator
+
+			new_fraction.numerator += new_value_fraction.numerator
+
+		}else{
+
+			new_fraction.numerator += value * new_fraction.denominator
+
+		}
+
+		new_fraction.simplify()
+		
+		return new_fraction
+	}
+
+	subtract(value){
+		const new_fraction = this.clone()
+
+		if (value instanceof Fraction) {
+
+			const new_value_fraction = value.clone()
+			const this_denominator = this.denominator
+
+			new_fraction.numerator *= new_value_fraction.denominator
+			new_fraction.denominator *= new_value_fraction.denominator
+
+			new_value_fraction.numerator *= this_denominator
+			new_value_fraction.denominator *= this_denominator
+
+			new_fraction.numerator -= new_value_fraction.numerator
+
+		}else{
+
+			new_fraction.numerator -= value * new_fraction.denominator
+
+		}
+
+		new_fraction.simplify()
+		
+		return new_fraction
+	}
+
+	multiply(value){
+
+		const new_fraction = this.clone()
+
+		if (value instanceof Fraction) {
+
+			new_fraction.numerator *= value.numerator
+			new_fraction.denominator *= value.denominator
+
+		}else{
+			
+			new_fraction.numerator *= value
+			
+		}
+		
+		new_fraction.simplify()
+
+		return new_fraction
+	}
+
+	divide(value){
+
+		const new_fraction = this.clone()
+
+		if (value instanceof Fraction) {
+
+			new_fraction.numerator *= value.denominator
+			new_fraction.denominator *= value.numerator
+
+		}else{
+			
+			new_fraction.denominator *= value
+			
+		}
+		
+		new_fraction.simplify()
+
+		return new_fraction
+	}
+
+	sum(fractions) {
+		let total = new Fraction()
+		for(let i = 0; i < fractions.length; i++) {
+			total = total.add(fractions[i])
+		}
+		
+		total.simplify()
+
+		const total_numerator = total.numerator
+		const total_denominator = total.denominator
+
+		this.numerator = total_numerator
+		this.denominator = total_denominator
+	}
+
+}
+
+
+
+
+const input_element = document.getElementById('upper-bound')
+document.getElementById('submit').addEventListener("click", ()=>{
+
+	const value = input_element.value
+	console.log(value)
+	let fractions = []
+	for(let i=1; i<=value; i++){
+		for(let j=1; j<i; j++){
+			const fraction = new Fraction(j, i)
+			fraction.simplify()
+
+			let includes = false
+			for (let k = 0; k < fractions.length; k++) {
+				const element = fractions[k]				
+				if(element.numerator === fraction.numerator && element.denominator === fraction.denominator){
+					includes = true
+					continue
+				}
+			}
+			
+			if(includes){
+				continue
+			}
+			fractions.push(fraction)
+		}
+	}
+
+	let elements = ''
+	for (let i = 0; i < fractions.length; i++) {
+		const element = fractions[i]
+		
+		elements += '<div style="margin: 0 8px;"><p style="margin: 0 2px;">'+element.numerator+'</p><div style="border: solid white 1px;"></div><p style="margin: 0 2px;">'+element.denominator+'</p></div>'
+	}
+	document.getElementById('output').innerHTML = elements
+})
+
+
+</script>
+</body>
+</html>
