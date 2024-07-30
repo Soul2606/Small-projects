@@ -32,9 +32,16 @@ p{text-align: center;}
 
 	<button id="submit">Submit</button>
 
+	<br>
+	
+	<p style="text-align: left;">Method 2</p>
+	<button id="submit2">Submit</button>
+
 	<div id="output" class="flex align-center wrap"></div>
 
 <script>
+
+
 
 
 const isPrime = num => {
@@ -42,6 +49,19 @@ for(let i = 2, s = Math.sqrt(num); i <= s; i++) {
 if(num % i === 0) return false;
 }
 return num > 1;
+}
+
+
+
+
+function update_output(array){
+	let elements = ''
+	for (let i = 0; i < array.length; i++) {
+		const element = array[i]
+		
+		elements += '<div style="margin: 0 8px;"><p style="margin: 0 2px;">'+element.numerator+'</p><div style="border: solid white 1px;"></div><p style="margin: 0 2px;">'+element.denominator+'</p></div>'
+	}
+	document.getElementById('output').innerHTML = elements
 }
 
 
@@ -230,14 +250,33 @@ document.getElementById('submit').addEventListener("click", ()=>{
 		}
 	}
 
-	let elements = ''
-	for (let i = 0; i < fractions.length; i++) {
-		const element = fractions[i]
-		
-		elements += '<div style="margin: 0 8px;"><p style="margin: 0 2px;">'+element.numerator+'</p><div style="border: solid white 1px;"></div><p style="margin: 0 2px;">'+element.denominator+'</p></div>'
-	}
-	document.getElementById('output').innerHTML = elements
+	fractions.sort((a,b)=>{(b.numerator * a.denominator) - (a.numerator * b.denominator)})
+
+	update_output(fractions)
+
 })
+
+
+
+
+let fractions = [new Fraction(0,1), new Fraction(1,1)]
+document.getElementById('submit2').addEventListener('click', ()=>{
+
+	const value = input_element.value
+
+
+	for (let i = fractions.length - 2; i >= 0; i--) {
+		const element = fractions[i]
+		const element2 = fractions[i + 1]
+
+		fractions.splice(i+1, 0, new Fraction(element.numerator + element2.numerator, element.denominator + element2.denominator))
+		
+	}
+
+	update_output(fractions)
+})
+
+
 
 
 </script>
