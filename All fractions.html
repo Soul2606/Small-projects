@@ -218,6 +218,41 @@ class Fraction{
 		this.denominator = total_denominator
 	}
 
+	farey(value) {
+
+		const new_fraction = this.clone()
+
+		if (value instanceof Fraction) {
+
+			new_fraction.numerator += value.numerator
+			new_fraction.denominator += value.denominator
+
+		}else{
+			
+			new_fraction.numerator += value
+			new_fraction.denominator += 1
+			
+		}
+
+		return new_fraction
+
+
+	}
+
+	grater(value) {
+
+		const new_fraction = new Fraction(0,1)
+
+		if (value instanceof Fraction) {
+
+			return value.numerator * this.denominator < this.numerator * value.denominator
+
+		}else{
+
+
+
+		}
+	}
 }
 
 
@@ -250,7 +285,7 @@ document.getElementById('submit').addEventListener("click", ()=>{
 		}
 	}
 
-	fractions.sort((a,b)=>{(b.numerator * a.denominator) - (a.numerator * b.denominator)})
+	fractions.sort((a,b)=>{return(a.numerator * b.denominator) - (b.numerator * a.denominator)})
 
 	update_output(fractions)
 
