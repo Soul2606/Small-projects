@@ -1,0 +1,139 @@
+{"systems":
+	[
+		{"name":"Sol", "type":"system", "number_of_planets":8, "system_architecture":
+			{"name":"Sol", "type":"star", "satellites":
+				[
+					{"name":"Mercury", "type":"planet", "satellites":[]},
+					{"name":"Venus", "type":"planet", "satellites":[]},
+					{"name":"Earth", "type":"planet", "satellites":
+						[
+							{"name":"Moon", "type":"moon", "satellites":[]}
+						]
+					},
+					{"name":"Mars", "type":"planet", "satellites":[]},
+					{"name":"Jupiter", "type":"planet", "satellites":
+						[
+							{"name":"Io", "type":"moon", "satellites":[]},
+							{"name":"Europa", "type":"moon", "satellites":[]},
+							{"name":"Ganymede", "type":"moon", "satellites":[]},
+							{"name":"Callisto", "type":"moon", "satellites":[]}
+						]
+					},
+					{"name":"Saturn", "type":"planet", "satellites":
+						[
+							{"name":"Mimas", "type":"moon", "satellites":[]},
+							{"name":"Enceladus", "type":"moon", "satellites":[]},
+							{"name":"Tethys", "type":"moon", "satellites":[]},
+							{"name":"Dione", "type":"moon", "satellites":[]},
+							{"name":"Rhea", "type":"moon", "satellites":[]},
+							{"name":"Titan", "type":"moon", "satellites":[]},
+							{"name":"Iapetus", "type":"moon", "satellites":[]}
+						]
+					},
+					{"name":"Uranus", "type":"planet", "satellites":
+						[
+							{"name":"Miranda", "type":"moon", "satellites":[]},
+							{"name":"Ariel", "type":"moon", "satellites":[]},
+							{"name":"Umbriel", "type":"moon", "satellites":[]},
+							{"name":"Titania", "type":"moon", "satellites":[]},
+							{"name":"Oberon", "type":"moon", "satellites":[]}
+						]
+					},
+					{"name":"Neptune", "type":"planet", "satellites":
+						[
+							{"name":"Naiad", "type":"moon", "satellites":[]},
+							{"name":"Thalassa", "type":"moon", "satellites":[]},
+							{"name":"Despina", "type":"moon", "satellites":[]},
+							{"name":"Galatea", "type":"moon", "satellites":[]},
+							{"name":"Larissa", "type":"moon", "satellites":[]},
+							{"name":"Hippocamp", "type":"moon", "satellites":[]},
+							{"name":"Proteus", "type":"moon", "satellites":[]}
+						]
+					}
+				]
+			}
+		},
+		{"name":"my epic system", "type":"system", "number_of_planets":14, "system_architecture":
+			{"name":null, "type":"barycenter", "satellites":
+				[
+					{"name":"star 1", "type":"star", "satellites":
+						[
+							{"name":"star 1-b", "type":"planet", "satellites":
+								[
+									{"name":"random moon", "type":"moon", "satellites":[]}
+								]
+							},
+							{"name":"star 1-a", "type":"planet", "satellites":
+								[
+									{"name":"random moon", "type":"moon", "satellites":[]}
+								]
+							},
+							{"name":"star 1-c", "type":"planet", "satellites":
+								[
+									{"name":"random moon", "type":"moon", "satellites":[]},
+									{"name":"random moon", "type":"moon", "satellites":[]},
+									{"name":"random moon", "type":"moon", "satellites":[]}
+								]
+							},
+							{"name":"star 1-d", "type":"planet", "satellites":
+								[
+									{"name":"random moon", "type":"moon", "satellites":[]},
+									{"name":"random moon", "type":"moon", "satellites":[]}
+								]
+							},
+							{"name":"star 1-e", "type":"planet", "satellites":
+								[
+									{"name":"random moon", "type":"moon", "satellites":[]},
+									{"name":"random moon", "type":"moon", "satellites":[]},
+									{"name":"random moon", "type":"moon", "satellites":[]},
+									{"name":"random moon", "type":"moon", "satellites":[]},
+									{"name":"random moon", "type":"moon", "satellites":[]}
+								]
+							}
+						]
+					},
+					{"name":"star 2", "type":"star", "satellites":
+						[
+							{"name":"star 2-b", "type":"planet", "satellites":
+								[
+									{"name":"random moon", "type":"moon", "satellites":[]}
+								]
+							},
+							{"name":"star 2-a", "type":"planet", "satellites":
+								[
+									{"name":"random moon", "type":"moon", "satellites":[]}
+								]
+							},
+							{"name":"star 2-c", "type":"planet", "satellites":
+								[
+									{"name":"random moon", "type":"moon", "satellites":[]},
+									{"name":"random moon", "type":"moon", "satellites":[]}
+								]
+							},
+							{"name":"star 2-d", "type":"planet", "satellites":
+								[
+									{"name":"random moon", "type":"moon", "satellites":[]},
+									{"name":"random moon", "type":"moon", "satellites":[]}
+								]
+							},
+							{"name":"star 2-e", "type":"planet", "satellites":
+								[
+									{"name":"random moon", "type":"moon", "satellites":[]}
+								]
+							}
+						]
+					},
+					{"name":"distant planet", "type":"planet", "satellites":
+						[]
+					},
+					{"name":"distant planet 2", "type":"planet", "satellites":
+						[
+							{"name":"random moon", "type":"moon", "satellites":[]},
+							{"name":"random moon", "type":"moon", "satellites":[]}
+						]
+					}
+				]
+			}
+		}
+	]
+}

@@ -1,0 +1,30 @@
+
+body{
+    background-color: rgb(31, 31, 34);
+    color: white;
+    line-height: 20px;
+    text-wrap: nowrap;
+}
+
+.flex-row{
+    display: flex;
+}
+
+.flex-column{
+    display: flex;
+    flex-direction: column;
+}
+
+.object{
+    height: min-content;
+    width: min-content;
+    margin: 1px;
+}
+
+.object-info{
+    padding: 0 15px;
+}
+
+.object-satellites{
+    margin: 2px;
+}
