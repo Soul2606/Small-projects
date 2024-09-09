@@ -36,10 +36,19 @@ p{text-align: center;}
 	
 	<p style="text-align: left;">Method 2</p>
 	<button id="submit2">Submit</button>
-
+	<br>
+	<br>
+	<br>
+	<br>
+	<div id="number-line" style="background-color: gray; margin: 0 25px; height: 5px; position: relative;"></div>
+	<br>
 	<div id="output" class="flex align-center wrap"></div>
 
+
 <script>
+
+
+const number_line = document.getElementById('number-line')
 
 
 
@@ -62,6 +71,19 @@ function update_output(array){
 		elements += '<div style="margin: 0 8px;"><p style="margin: 0 2px;">'+element.numerator+'</p><div style="border: solid white 1px;"></div><p style="margin: 0 2px;">'+element.denominator+'</p></div>'
 	}
 	document.getElementById('output').innerHTML = elements
+}
+
+
+
+
+function update_number_line(array){
+	let elements = ''
+	for (let i = 0; i < array.length; i++) {
+		const element = array[i]
+		
+		elements += '<div style="margin: 0 8px; position: absolute; left:'+element.numerator/element.denominator*100+'%; transform: scale('+(1/element.denominator**2)+');"><p style="margin: 0 2px;">'+element.numerator+'</p><div style="border: solid white 1px;"></div><p style="margin: 0 2px;">'+element.denominator+'</p></div>'
+	}
+	number_line.innerHTML = elements
 }
 
 
@@ -307,7 +329,7 @@ document.getElementById('submit2').addEventListener('click', ()=>{
 		
 	}
 
-	update_output(fractions)
+	update_number_line(fractions)
 })
 
 
