@@ -10,6 +10,7 @@
 
 .arrow-container{
     position: relative;
+    pointer-events:none;
 }
 
 .arrow {
@@ -18,6 +19,7 @@
     display: inline-block;
     padding: 3px;
     position: absolute;
+    pointer-events:none;
 }
 
 .right {
