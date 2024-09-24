@@ -9,12 +9,24 @@
     <script src="script.js" defer></script>
 </head>
 <body>
-    <p id="time"></p>
+    <header>
+        <p id="time"></p>
+        <div class="mode-select-container">
+            <button class="mode-select-button" id="mode-water-button" style="background-color: rgb(200,200,200); color: black;">Water</button>
+            <button class="mode-select-button" id="mode-light-button">Light</button>
+        </div>
+    </header>
     <div class="flex">
         <div class="grid" id="grid"></div>
         <div class="menu">
+            <p>tools</p>
+            <button id="debug-pause">pause</button>
+            <button id="debug-play">play</button>
+            <button id="debug-step">step</button>
             <p>force</p>
             <button id="debug-add-force">add force</button>
+            <button id="debug-add-force-left">add force left</button>
+            <button id="debug-add-force-right">add force right</button>
             <p id="coordinates">x0 y0</p>
             <div style="display: flex; flex-direction: column; align-items: center;">
                 <button id="move-up-button" style="height: 32px; width: 32px;">
@@ -32,6 +44,9 @@
                     </button>
                 </div>
             </div>
+            <p>debug</p>
+            <button id="debug-show">show</button>
+            <button id="debug-hide">hide</button>
         </div>
     </div>
 

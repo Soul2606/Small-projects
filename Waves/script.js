@@ -1,12 +1,21 @@
 
 const grid = document.getElementById('grid')
+const debug_show_button = document.getElementById('debug-show')
+const debug_hide_button = document.getElementById('debug-hide')
+const debug_pause_button = document.getElementById('debug-pause')
+const debug_play_button = document.getElementById('debug-play')
+const debug_step_button = document.getElementById('debug-step')
 const debug_add_force_button = document.getElementById('debug-add-force')
+const debug_add_force_left_button = document.getElementById('debug-add-force-left')
+const debug_add_force_right_button = document.getElementById('debug-add-force-right')
 const debug_time = document.getElementById('time')
 const debug_coordinates = document.getElementById('coordinates')
 const move_up_button = document.getElementById('move-up-button')
 const move_left_button = document.getElementById('move-left-button')
 const move_down_button = document.getElementById('move-down-button')
 const move_right_button = document.getElementById('move-right-button')
+const mode_water_button = document.getElementById('mode-water-button')
+const mode_light_button = document.getElementById('mode-light-button')
 
 const arrows = []
 const force_log = []
@@ -19,9 +28,15 @@ const mouse_drag_point_position = {x:0,y:0}
 const mouse_drag_point_velocity = {x:0,y:0}
 let mouse_down_on_grid = false
 
-let time = 0
-let simulation_speed = 10
+let simulation_mode = 0
 
+let time = 0
+const default_simulation_speed = 10
+let simulation_speed = default_simulation_speed
+
+
+
+// Generate grid
 for (let i = 0; i < 20*20; i++) {
 
     const arrow_container = document.createElement('div')
@@ -33,8 +48,78 @@ for (let i = 0; i < 20*20; i++) {
     arrow.id = 'arrow'+i
     arrow_container.appendChild(arrow)
 
+    //Debug stuff
+    const debug_number = document.createElement('p')
+    debug_number.className = 'debug-arrow-info'
+    debug_number.id = 'debug-arrow-info'+i
+    arrow_container.appendChild(debug_number)
+
     set_arrow_direction(arrow,0,1)
     arrows.push(arrow)
+
+}
+
+
+
+
+class Vector2D {
+    constructor(x, y) {
+        this.x = x
+        this.y = y
+    }
+
+    is_NaN(){
+        return isNaN(this.x) || isNaN(this.y)
+    }
+
+    add(value) {
+        if(value instanceof Vector2D){
+            this.x += value.x
+            this.y += value.y
+        }    
+    }
+
+    multiply(value) {
+        if(value instanceof Vector2D){
+            this.x *= value.x
+            this.y *= value.y
+        }    
+    }
+
+    subtract(value) {
+        if(value instanceof Vector2D){
+            this.x /= value.x
+            this.y /= value.y
+        }    
+    }
+
+    magnitude(){
+        return Math.sqrt(this.x ** 2 + this.y ** 2)
+    }
+
+    normalize(){
+        const magnitude = this.magnitude()
+        if(magnitude !== 0){
+            this.x /= magnitude
+            this.y /= magnitude
+        }
+    }
+
+    dot(vector){
+        return this.x * vector.x + this.y * vector.y
+    }
+
+    angel(vector){
+        if(vector == undefined){
+            return Math.atan2(this.x, this.y)
+        }else{
+            return Math.acos(this.dot(vector) / (this.magnitude() * vector.magnitude()))
+        }
+    }
+
+    angle_sim(vector){
+        return this.angel(vector) / Math.PI
+    }
 
 }
 
@@ -77,9 +162,9 @@ function set_arrow_direction(arrow, direction_degree, scale){
 
 
 
-function add_force(time_when_applied, scale, x, y){
+function add_force(time_when_applied, scale, x, y, velocityX, velocityY){
 
-    force_log.push({time:time_when_applied, scale:scale, x:x, y:y})
+    force_log.push({time:time_when_applied, scale:scale, x:x, y:y, velocityX:velocityX, velocityY:velocityY})
     if(force_log.length > max_force_log_length){
         force_log.shift()
     }
@@ -89,13 +174,42 @@ function add_force(time_when_applied, scale, x, y){
 
 
 
-
-debug_add_force_button.addEventListener('click',()=>{
-    add_force(time, 2, 0, 0)
-    console.log('added force. Force:', force_log)
+debug_show_button.addEventListener('click', ()=>{
+    const info_text = document.getElementsByClassName('debug-arrow-info')
+    for (let i = 0; i < info_text.length; i++) {
+        const element = info_text[i];
+        element.style = 'display: block;'
+    }
+})
+debug_hide_button.addEventListener('click', ()=>{
+    const info_text = document.getElementsByClassName('debug-arrow-info')
+    for (let i = 0; i < info_text.length; i++) {
+        const element = info_text[i];
+        element.style = 'display: none;'
+    }
 })
 
 
+debug_pause_button.addEventListener('click', ()=>{
+    simulation_speed = 0
+})
+debug_play_button.addEventListener('click', ()=>{
+    simulation_speed = default_simulation_speed
+})
+debug_step_button.addEventListener('click', ()=>{
+    time++
+})
+
+
+debug_add_force_button.addEventListener('click',()=>{
+    add_force(time, 2, 0, 0, 0, 1)
+})
+debug_add_force_left_button.addEventListener('click',()=>{
+    add_force(time, 2, 0, 0, -1, 0)
+})
+debug_add_force_right_button.addEventListener('click',()=>{
+    add_force(time, 2, 0, 0, 1, 0)
+})
 
 
 move_up_button.addEventListener('click',()=>{
@@ -156,9 +270,9 @@ function move_mouse_drag_point_position(){
 
     const mouse_drag_point_position_in_game = {x:mouse_drag_point_position.x / 40, y:mouse_drag_point_position.y / 40}
 
-    add_force(time, (Math.abs(mouse_drag_point_velocity.x) + Math.abs(mouse_drag_point_velocity.y)) / 50, mouse_drag_point_position_in_game.x, mouse_drag_point_position_in_game.y)
+    add_force(time, (Math.abs(mouse_drag_point_velocity.x) + Math.abs(mouse_drag_point_velocity.y)) / 50, mouse_drag_point_position_in_game.x, mouse_drag_point_position_in_game.y, mouse_drag_point_velocity.x, mouse_drag_point_velocity.y)
 
-    console.log('total velocity', (Math.abs(mouse_drag_point_velocity.x) + Math.abs(mouse_drag_point_velocity.y)) / 50, 'position', mouse_drag_point_position_in_game.x, mouse_drag_point_position_in_game.y)
+    //console.log('total velocity', (Math.abs(mouse_drag_point_velocity.x) + Math.abs(mouse_drag_point_velocity.y)) / 50, 'position', mouse_drag_point_position_in_game.x, mouse_drag_point_position_in_game.y)
 }
 
 
@@ -176,20 +290,37 @@ function main() {
 
     time += dt / 1000 * simulation_speed
     debug_time.textContent = time.toFixed(1)
-
+    
     
     for (let i = 0; i < arrows.length; i++) {
         const arrow = arrows[i]
         let force_scale = 0
+        let force_direction = new Vector2D(0,0)
         for (let j = 0; j < force_log.length; j++) {
             const force = force_log[j];
-            
-            if(force == undefined){continue}
+
+            if(force == 0 || force == undefined || force == '' || force == {}){continue}
+
             const arrow_position = get_arrow_position(i)
             const arrow_distance_to_force = Math.sqrt((arrow_position.x - force.x) ** 2 + (arrow_position.y - force.y) ** 2)
-            force_scale += 0 + Math.max((force.scale - Math.abs(force.time - time + arrow_distance_to_force)), 0)
+            const scale_by_distance_and_time = Math.max((force.scale - Math.abs(force.time - time + arrow_distance_to_force)), 0)
+            let velocity_angle_difference = 1 - (new Vector2D(arrow_position.x - force.x, arrow_position.y - force.y).angle_sim(new Vector2D(force.velocityX, force.velocityY)))
+            velocity_angle_difference = isNaN(velocity_angle_difference)? 0: velocity_angle_difference
+            force_scale += scale_by_distance_and_time * velocity_angle_difference
             
+            let velocity_direction = new Vector2D(force.velocityX, force.velocityY)
+            if(velocity_direction.is_NaN()){
+                velocity_direction.x = 0
+                velocity_direction.y = 0
+            }
+            velocity_direction.normalize()
+            velocity_direction.multiply(scale_by_distance_and_time)
+            force_direction.add(velocity_direction)
         }
-        set_arrow_direction(arrow, 0, force_scale)
+        set_arrow_direction(arrow, force_direction.angel() * 180 / Math.PI, force_scale)
+
+        if(simulation_speed === 0){
+            document.getElementById('debug-arrow-info'+i).textContent = 'angel:'+(force_direction.angel()*180/Math.PI).toFixed(1)+' scale:'+force_scale.toFixed(1)
+        }
     }
 }

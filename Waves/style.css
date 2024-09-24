@@ -1,4 +1,13 @@
 
+
+
+
+header{
+    display: flex;
+    justify-content: space-evenly;
+    background-color: rgb(46, 47, 50);
+}
+
 .grid{
     display: grid;
     justify-items: center;
@@ -6,6 +15,16 @@
     grid-template-columns: auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto;
     width: 800px;
     height: 800px;
+}
+
+.mode-select-container{
+    display: flex;
+    padding: 5px 0;
+}
+
+.mode-select-button{
+    background-color: rgb(75,75,75);
+    color: white;
 }
 
 .arrow-container{
@@ -20,6 +39,13 @@
     padding: 3px;
     position: absolute;
     pointer-events:none;
+}
+
+.debug-arrow-number{
+    position: absolute;
+    pointer-events: none;
+    display: none;
+    text-wrap: wrap;
 }
 
 .right {
