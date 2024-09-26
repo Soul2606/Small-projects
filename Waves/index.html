@@ -19,10 +19,16 @@
     <div class="flex" style="width: fit-content;">
         <div class="grid" id="grid"></div>
         <div class="menu">
-            <p>tools</p>
+            <p>Tools</p>
             <button id="debug-pause">pause</button>
             <button id="debug-play">play</button>
             <button id="debug-step">step</button>
+            <div>
+                <label>Simulation speed</label>
+                <br>
+                <input id="simulation-speed-slider" type="range" value="10" min="1" max="25">
+                <label id="simulation-speed-label">10</label>
+            </div>
             <p>force</p>
             <button id="debug-add-force">add force</button>
             <button id="debug-add-force-left">add force left</button>

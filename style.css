@@ -3,6 +3,14 @@ body{
     color: white;
 }
 
+a{
+    color: cyan;
+}
+
+a:visited{
+    color: magenta;
+}
+
 .flex{
     display: flex;
 }

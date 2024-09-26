@@ -11,6 +11,8 @@ const debug_add_force_left_button = document.getElementById('debug-add-force-lef
 const debug_add_force_right_button = document.getElementById('debug-add-force-right')
 const debug_time = document.getElementById('time')
 const debug_coordinates = document.getElementById('coordinates')
+const simulation_speed_slider = document.getElementById('simulation-speed-slider')
+const simulation_speed_label = document.getElementById('simulation-speed-label')
 const move_up_button = document.getElementById('move-up-button')
 const move_left_button = document.getElementById('move-left-button')
 const move_down_button = document.getElementById('move-down-button')
@@ -36,6 +38,8 @@ const default_simulation_speed = 10
 let simulation_speed = default_simulation_speed
 
 let debug_show_grid_info_enabled = false
+
+let debug_selected_arrow = null
 
 
 
@@ -87,7 +91,10 @@ class Vector2D {
         if(value instanceof Vector2D){
             this.x *= value.x
             this.y *= value.y
-        }    
+        }else{
+            this.x *= value
+            this.y *= value
+        }
     }
 
     subtract(value) {
@@ -113,8 +120,8 @@ class Vector2D {
         return this.x * vector.x + this.y * vector.y
     }
 
-    angel(vector){
-        if(vector == undefined){
+    angle(vector){
+        if(vector === undefined){
             return Math.atan2(this.x, this.y)
         }else{
             return Math.acos(this.dot(vector) / (this.magnitude() * vector.magnitude()))
@@ -122,7 +129,7 @@ class Vector2D {
     }
 
     angle_sim(vector){
-        return this.angel(vector) / Math.PI
+        return this.angle(vector) / Math.PI
     }
 
 }
@@ -188,19 +195,22 @@ function add_force(time_when_applied, scale, x, y, velocityX, velocityY){
         force_log.shift()
     }
 
-    update_force_log()
+    update_force_log(force_log)
 }
 
 
 
 
-function update_force_log(){
+function update_force_log(log, influences){
     remove_all_children(debug_force_log)
-    for (let i = 0; i < force_log.length; i++) {
-        const force = force_log[force_log.length - i - 1];
+    for (let i = 0; i < log.length; i++) {
+        const force = log[log.length - i - 1];
         
         const force_info_element = document.createElement('p')
-        force_info_element.textContent = 't:' + force.time + ' | s:' + force.scale + ' | pos:' + force.x + ',' + force.y + ' | vel:' + force.velocityX + ',' + force.velocityY
+        force_info_element.textContent = 't:' + force.time.toFixed(1) + ' | s:' + force.scale.toFixed(1) + ' | pos:' + force.x.toFixed(1) + ',' + force.y.toFixed(1) + ' | vel:' + force.velocityX.toFixed(1) + ',' + force.velocityY.toFixed(1)
+        if(influences !== undefined){
+            force_info_element.textContent += ' | dt-inf:' + influences[influences.length - i - 1].toFixed(1)
+        }
         debug_force_log.appendChild(force_info_element)
     }
 }
@@ -210,6 +220,7 @@ function update_force_log(){
 
 debug_show_button.addEventListener('click', ()=>{
     debug_show_grid_info_enabled = true
+    debug_selected_arrow = null
     const info_text = document.getElementsByClassName('debug')
     for (let i = 0; i < info_text.length; i++) {
         const element = info_text[i];
@@ -218,6 +229,7 @@ debug_show_button.addEventListener('click', ()=>{
 })
 debug_hide_button.addEventListener('click', ()=>{
     debug_show_grid_info_enabled = false
+    debug_selected_arrow = null
     const info_text = document.getElementsByClassName('debug')
     for (let i = 0; i < info_text.length; i++) {
         const element = info_text[i];
@@ -270,7 +282,8 @@ for (let i = 0; i < document.getElementsByClassName('debug-arrow-info').length; 
     const element = document.getElementsByClassName('debug-arrow-info')[i];
     
     element.addEventListener('click', ()=>{
-        console.log('clicked', element)
+        console.log(element, 'clicked', element.parentNode.firstChild, 'set as selected arrow')
+        debug_selected_arrow = element.parentNode.firstChild
     })
 }
 
@@ -314,7 +327,7 @@ function move_mouse_drag_point_position(){
     mouse_drag_point_position.x += mouse_drag_point_velocity.x
     mouse_drag_point_position.y += mouse_drag_point_velocity.y
 
-    const mouse_drag_point_position_in_game = {x:mouse_drag_point_position.x / 40, y:mouse_drag_point_position.y / 40}
+    const mouse_drag_point_position_in_game = {x:mouse_drag_point_position.x / 40 + global_coordinate_offset.x, y:mouse_drag_point_position.y / 40 + global_coordinate_offset.y}
 
     add_force(time, (Math.abs(mouse_drag_point_velocity.x) + Math.abs(mouse_drag_point_velocity.y)) / 50, mouse_drag_point_position_in_game.x, mouse_drag_point_position_in_game.y, mouse_drag_point_velocity.x, mouse_drag_point_velocity.y)
 
@@ -327,7 +340,7 @@ function move_mouse_drag_point_position(){
 console.log(arrows)
 
 let lastUpdate = Date.now()
-const myInterval = setInterval(main, 100)
+const myInterval = setInterval(main, 50)
 
 function main() {
     let now = Date.now()
@@ -342,6 +355,8 @@ function main() {
         const arrow = arrows[i]
         let force_scale = 0
         let force_direction = new Vector2D(0,0)
+        let distance_and_time_influence_from_each_force = []
+        
         for (let j = 0; j < force_log.length; j++) {
             const force = force_log[j];
 
@@ -353,8 +368,10 @@ function main() {
             let velocity_angle_difference = 1 - (new Vector2D(arrow_position.x - force.x, arrow_position.y - force.y).angle_sim(new Vector2D(force.velocityX, force.velocityY)))
             velocity_angle_difference = isNaN(velocity_angle_difference)? 0: velocity_angle_difference
             force_scale += scale_by_distance_and_time * velocity_angle_difference
+
+            distance_and_time_influence_from_each_force.push(scale_by_distance_and_time)
             
-            let velocity_direction = new Vector2D(force.velocityX, force.velocityY)
+            let velocity_direction = new Vector2D(force.velocityX, -force.velocityY)
             if(velocity_direction.is_NaN()){
                 velocity_direction.x = 0
                 velocity_direction.y = 0
@@ -363,10 +380,13 @@ function main() {
             velocity_direction.multiply(scale_by_distance_and_time)
             force_direction.add(velocity_direction)
         }
-        set_arrow_direction(arrow, force_direction.angel() * 180 / Math.PI, force_scale)
+        set_arrow_direction(arrow, force_direction.angle() * 180 / Math.PI, force_scale)
 
         //Debug stuff
-        document.getElementById('debug-arrow-info'+i).textContent = 'a:'+(force_direction.angel()*180/Math.PI).toFixed(1)+' s:'+force_scale.toFixed(1)
+        document.getElementById('debug-arrow-info'+i).textContent = 'a:'+(force_direction.angle()*180/Math.PI).toFixed(1)+' s:'+force_scale.toFixed(1)
         
+        if(arrow === debug_selected_arrow){
+            update_force_log(force_log, distance_and_time_influence_from_each_force)
+        }
     }
 }
