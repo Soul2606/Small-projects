@@ -13,8 +13,9 @@ header{
     justify-items: center;
     align-items: center;
     grid-template-columns: auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto;
-    width: 800px;
-    height: 800px;
+    width:max-content;
+    min-width: 800px;
+    min-height: 800px;
 }
 
 .mode-select-container{
@@ -29,7 +30,6 @@ header{
 
 .arrow-container{
     position: relative;
-    pointer-events:none;
 }
 
 .arrow {
@@ -37,15 +37,17 @@ header{
     border-width: 0 3px 3px 0;
     display: inline-block;
     padding: 3px;
-    position: absolute;
     pointer-events:none;
 }
 
 .debug-arrow-number{
     position: absolute;
-    pointer-events: none;
     display: none;
     text-wrap: wrap;
+}
+
+.debug-arrow-number:hover{
+    color: rgb(192, 44, 164);
 }
 
 .right {

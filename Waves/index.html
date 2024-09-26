@@ -16,7 +16,7 @@
             <button class="mode-select-button" id="mode-light-button">Light</button>
         </div>
     </header>
-    <div class="flex">
+    <div class="flex" style="width: fit-content;">
         <div class="grid" id="grid"></div>
         <div class="menu">
             <p>tools</p>
@@ -47,6 +47,12 @@
             <p>debug</p>
             <button id="debug-show">show</button>
             <button id="debug-hide">hide</button>
+        </div>
+        <div class="debug" style="display: none;">
+            <p style="text-wrap: nowrap;">Force log</p>
+            <div id="force-log" style="overflow-y: scroll; max-height: 600px;">
+
+            </div>
         </div>
     </div>
 

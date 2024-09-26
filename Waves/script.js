@@ -1,5 +1,6 @@
 
 const grid = document.getElementById('grid')
+const debug_force_log = document.getElementById('force-log')
 const debug_show_button = document.getElementById('debug-show')
 const debug_hide_button = document.getElementById('debug-hide')
 const debug_pause_button = document.getElementById('debug-pause')
@@ -34,6 +35,8 @@ let time = 0
 const default_simulation_speed = 10
 let simulation_speed = default_simulation_speed
 
+let debug_show_grid_info_enabled = false
+
 
 
 // Generate grid
@@ -50,8 +53,9 @@ for (let i = 0; i < 20*20; i++) {
 
     //Debug stuff
     const debug_number = document.createElement('p')
-    debug_number.className = 'debug-arrow-info'
+    debug_number.className = 'debug-arrow-info debug'
     debug_number.id = 'debug-arrow-info'+i
+    debug_number.style.display = 'none'
     arrow_container.appendChild(debug_number)
 
     set_arrow_direction(arrow,0,1)
@@ -126,6 +130,21 @@ class Vector2D {
 
 
 
+function relu(value) {
+    return Math.max(value, 0)
+}
+
+
+
+
+function remove_all_children(element){
+    while (element.firstChild) {
+        element.removeChild(element.firstChild);
+    }
+}
+
+
+
 function get_arrow_from_position(array, x, y){
     if(x > 20 || x < 0 || y > 20 || y < 0){
         return null
@@ -169,20 +188,37 @@ function add_force(time_when_applied, scale, x, y, velocityX, velocityY){
         force_log.shift()
     }
 
+    update_force_log()
+}
+
+
+
+
+function update_force_log(){
+    remove_all_children(debug_force_log)
+    for (let i = 0; i < force_log.length; i++) {
+        const force = force_log[force_log.length - i - 1];
+        
+        const force_info_element = document.createElement('p')
+        force_info_element.textContent = 't:' + force.time + ' | s:' + force.scale + ' | pos:' + force.x + ',' + force.y + ' | vel:' + force.velocityX + ',' + force.velocityY
+        debug_force_log.appendChild(force_info_element)
+    }
 }
 
 
 
 
 debug_show_button.addEventListener('click', ()=>{
-    const info_text = document.getElementsByClassName('debug-arrow-info')
+    debug_show_grid_info_enabled = true
+    const info_text = document.getElementsByClassName('debug')
     for (let i = 0; i < info_text.length; i++) {
         const element = info_text[i];
         element.style = 'display: block;'
     }
 })
 debug_hide_button.addEventListener('click', ()=>{
-    const info_text = document.getElementsByClassName('debug-arrow-info')
+    debug_show_grid_info_enabled = false
+    const info_text = document.getElementsByClassName('debug')
     for (let i = 0; i < info_text.length; i++) {
         const element = info_text[i];
         element.style = 'display: none;'
@@ -230,13 +266,22 @@ move_right_button.addEventListener('click',()=>{
 })
 
 
+for (let i = 0; i < document.getElementsByClassName('debug-arrow-info').length; i++) {
+    const element = document.getElementsByClassName('debug-arrow-info')[i];
+    
+    element.addEventListener('click', ()=>{
+        console.log('clicked', element)
+    })
+}
 
 
-grid.addEventListener('mousemove', (event)=>{
+
+
+grid.addEventListener('mousemove', (e)=>{
 
     const rect = grid.getBoundingClientRect()
-    const x = event.clientX - rect.left
-    const y = event.clientY - rect.top
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
     mouse_position_on_grid.x = x
     mouse_position_on_grid.y = y
 
@@ -244,6 +289,7 @@ grid.addEventListener('mousemove', (event)=>{
 
 
 grid.addEventListener('mousedown', (e)=>{
+    if(debug_show_grid_info_enabled){return}
     e.preventDefault()
     mouse_drag_point_position.x = mouse_position_on_grid.x
     mouse_drag_point_position.y = mouse_position_on_grid.y
@@ -254,7 +300,7 @@ grid.addEventListener('mousedown', (e)=>{
 
 grid.addEventListener('mouseup', ()=>{
     mouse_down_on_grid = false
-    console.log('mouse down', mouse_down_on_grid)
+    console.log('mouse up', mouse_down_on_grid)
 })
 
 
@@ -303,7 +349,7 @@ function main() {
 
             const arrow_position = get_arrow_position(i)
             const arrow_distance_to_force = Math.sqrt((arrow_position.x - force.x) ** 2 + (arrow_position.y - force.y) ** 2)
-            const scale_by_distance_and_time = Math.max((force.scale - Math.abs(force.time - time + arrow_distance_to_force)), 0)
+            const scale_by_distance_and_time = relu((force.scale - Math.abs(force.time - time + arrow_distance_to_force)))
             let velocity_angle_difference = 1 - (new Vector2D(arrow_position.x - force.x, arrow_position.y - force.y).angle_sim(new Vector2D(force.velocityX, force.velocityY)))
             velocity_angle_difference = isNaN(velocity_angle_difference)? 0: velocity_angle_difference
             force_scale += scale_by_distance_and_time * velocity_angle_difference
@@ -319,8 +365,8 @@ function main() {
         }
         set_arrow_direction(arrow, force_direction.angel() * 180 / Math.PI, force_scale)
 
-        if(simulation_speed === 0){
-            document.getElementById('debug-arrow-info'+i).textContent = 'angel:'+(force_direction.angel()*180/Math.PI).toFixed(1)+' scale:'+force_scale.toFixed(1)
-        }
+        //Debug stuff
+        document.getElementById('debug-arrow-info'+i).textContent = 'a:'+(force_direction.angel()*180/Math.PI).toFixed(1)+' s:'+force_scale.toFixed(1)
+        
     }
 }
