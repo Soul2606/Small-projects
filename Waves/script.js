@@ -249,6 +249,14 @@ debug_step_button.addEventListener('click', ()=>{
 })
 
 
+simulation_speed_slider.addEventListener('input', ()=>{
+
+    simulation_speed = simulation_speed_slider.value
+    
+    simulation_speed_label.textContent = simulation_speed
+})
+
+
 debug_add_force_button.addEventListener('click',()=>{
     add_force(time, 2, 0, 0, 0, 1)
 })
