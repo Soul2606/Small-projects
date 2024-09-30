@@ -1,0 +1,43 @@
+body{
+    background-color: rgb(29, 31, 37);
+    color: white;
+}
+
+a{
+    color: cyan;
+}
+
+p{
+    color: white;
+}
+
+a:visited{
+    color: magenta;
+}
+
+.flex{
+    display: flex;
+}
+
+.align-center{
+    align-items: center;
+}
+
+.justify-center{
+    justify-content: center;
+}
+
+.answer-button{
+    margin: 0 5px;
+    height: 35px;
+    width: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0);
+    border: gray 1px solid;
+}
+
+.answer-number{
+    font-size: x-large;
+}
