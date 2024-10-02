@@ -12,14 +12,13 @@ header{
     display: grid;
     justify-items: center;
     align-items: center;
-    grid-template-columns: auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto;
-    width:max-content;
-    min-width: 800px;
-    min-height: 800px;
+    width: 800px;
+    height: 800px;
 }
 
 .mode-select-container{
     display: flex;
+    align-items: stretch;
     padding: 5px 0;
 }
 
@@ -33,11 +32,17 @@ header{
 }
 
 .arrow {
+    position: absolute;
     border: solid white;
     border-width: 0 3px 3px 0;
     display: inline-block;
     padding: 3px;
     pointer-events:none;
+}
+
+.debug-arrow-info{
+    margin: 0;
+    position: absolute;
 }
 
 .debug-arrow-number{
@@ -68,4 +73,13 @@ header{
 .down {
     transform: rotate(45deg);
     -webkit-transform: rotate(45deg);
+}
+
+.mouse-drag-point-visualizer{
+    position: absolute;
+    height: 15px;
+    width: 15px;
+    background-color: rgba(175, 175, 50, 0.2);
+    border-radius: 50%;
+    pointer-events: none;
 }

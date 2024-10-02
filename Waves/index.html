@@ -12,18 +12,25 @@
     <header>
         <p id="time"></p>
         <div class="mode-select-container">
-            <button class="mode-select-button" id="mode-water-button" style="background-color: rgb(200,200,200); color: black;">Water</button>
+            <h3 style="margin: 0 5px; align-self: center;">Mode</h3>
+            <button class="mode-select-button" id="mode-water-button" style="background-color: rgb(200,200,200); color: black;">Fluid</button>
             <button class="mode-select-button" id="mode-light-button">Light</button>
         </div>
         <div class="mode-select-container">
-            <button class="mode-select-button" style="background-color: rgb(200,200,200); color: black;">20*20</button>
-            <button class="mode-select-button">40*40</button>
+            <h3 style="margin: 0 5px; align-self: center;">Resolution</h3>
+            <button class="mode-select-button" id="resolution-20" style="background-color: rgb(200,200,200); color: black;">20*20</button>
+            <button class="mode-select-button" id="resolution-40">40*40</button>
         </div>
     </header>
     <div class="flex" style="width: fit-content;">
-        <div class="grid" id="grid"></div>
+        <div style="position: relative;">
+            <div class="grid" id="grid" style="grid-template-columns: auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto;">
+                <!--Code injected by javascript-->
+            </div>
+            <div class="mouse-drag-point-visualizer" id="mouse-drag-point-visualizer" style="top: 0; left: 0;"></div>
+        </div>
         <div class="menu">
-            <p>Tools</p>
+            <h4>Time</h4>
             <button id="debug-pause">pause</button>
             <button id="debug-play">play</button>
             <button id="debug-step">step</button>
@@ -33,10 +40,11 @@
                 <input id="simulation-speed-slider" type="range" value="10" min="1" max="25">
                 <label id="simulation-speed-label">10</label>
             </div>
-            <p>force</p>
+            <h4>Force</h4>
             <button id="debug-add-force">add force</button>
             <button id="debug-add-force-left">add force left</button>
             <button id="debug-add-force-right">add force right</button>
+            <h4>Navigation</h4>
             <p id="coordinates">x0 y0</p>
             <div style="display: flex; flex-direction: column; align-items: center;">
                 <button id="move-up-button" style="height: 32px; width: 32px;">
@@ -54,7 +62,7 @@
                     </button>
                 </div>
             </div>
-            <p>debug</p>
+            <h5>Debug</h5>
             <button id="debug-show">show</button>
             <button id="debug-hide">hide</button>
         </div>
