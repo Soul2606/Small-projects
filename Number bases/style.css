@@ -1,0 +1,10 @@
+body{
+    background-color: rgb(29, 31, 37);
+    color: white;
+}
+
+.grid{
+    display: grid;
+    grid-template-columns: auto auto;
+    width: 400px;
+}
