@@ -9,6 +9,8 @@ const debug_step_button = document.getElementById('debug-step')
 const debug_add_force_button = document.getElementById('debug-add-force')
 const debug_add_force_left_button = document.getElementById('debug-add-force-left')
 const debug_add_force_right_button = document.getElementById('debug-add-force-right')
+const resolution_20_button = document.getElementById('resolution-20')
+const resolution_40_button = document.getElementById('resolution-40')
 const debug_time = document.getElementById('time')
 const debug_coordinates = document.getElementById('coordinates')
 const simulation_speed_slider = document.getElementById('simulation-speed-slider')
@@ -19,6 +21,9 @@ const move_down_button = document.getElementById('move-down-button')
 const move_right_button = document.getElementById('move-right-button')
 const mode_water_button = document.getElementById('mode-water-button')
 const mode_light_button = document.getElementById('mode-light-button')
+const mouse_drag_point_visualizer_element = document.getElementById('mouse-drag-point-visualizer')
+
+let resolution = 20
 
 const arrows = []
 const force_log = []
@@ -43,29 +48,39 @@ let debug_selected_arrow = null
 
 
 
-// Generate grid
-for (let i = 0; i < 20*20; i++) {
+function generate_grid(){
 
-    const arrow_container = document.createElement('div')
-    arrow_container.className = 'arrow-container'
-    grid.appendChild(arrow_container)
+    const arrows_length = arrows.length
+    for (let i = 0; i < arrows_length; i++) {
+        arrows.pop()
+    }
 
-    const arrow = document.createElement('div')
-    arrow.className = 'arrow'
-    arrow.id = 'arrow'+i
-    arrow_container.appendChild(arrow)
+    remove_all_children(grid)
 
-    //Debug stuff
-    const debug_number = document.createElement('p')
-    debug_number.className = 'debug-arrow-info debug'
-    debug_number.id = 'debug-arrow-info'+i
-    debug_number.style.display = 'none'
-    arrow_container.appendChild(debug_number)
-
-    set_arrow_direction(arrow,0,1)
-    arrows.push(arrow)
-
+    for (let i = 0; i < resolution*resolution; i++) {
+    
+        const arrow_container = document.createElement('div')
+        arrow_container.className = 'arrow-container'
+        grid.appendChild(arrow_container)
+    
+        const arrow = document.createElement('div')
+        arrow.className = 'arrow'
+        arrow.id = 'arrow'+i
+        arrow_container.appendChild(arrow)
+    
+        //Debug stuff
+        const debug_number = document.createElement('p')
+        debug_number.className = 'debug-arrow-info debug'
+        debug_number.id = 'debug-arrow-info'+i
+        debug_number.style.display = 'none'
+        arrow_container.appendChild(debug_number)
+    
+        set_arrow_direction(arrow,0,1)
+        arrows.push(arrow)
+    
+    }
 }
+generate_grid()
 
 
 
@@ -153,20 +168,20 @@ function remove_all_children(element){
 
 
 function get_arrow_from_position(array, x, y){
-    if(x > 20 || x < 0 || y > 20 || y < 0){
+    if(x > resolution || x < 0 || y > resolution || y < 0){
         return null
     }
-    return array[y*20+x]
+    return array[y*resolution+x]
 }
 
 
 
 
 function get_arrow_position(arrow_index){
-    if(arrow_index > 20*20 || arrow_index < 0){
+    if(arrow_index > resolution*resolution || arrow_index < 0){
         return null
     }
-    return {x:arrow_index%20 + global_coordinate_offset.x, y:Math.floor(arrow_index/20) + global_coordinate_offset.y}
+    return {x:arrow_index%resolution + global_coordinate_offset.x, y:Math.floor(arrow_index/resolution) + global_coordinate_offset.y}
 }
 
 
@@ -235,6 +250,22 @@ debug_hide_button.addEventListener('click', ()=>{
         const element = info_text[i];
         element.style = 'display: none;'
     }
+})
+
+
+resolution_20_button.addEventListener('click', ()=>{
+    resolution_20_button.style = 'background-color: rgb(200,200,200); color: black;'
+    resolution_40_button.style = ''
+    resolution = 20
+    grid.style = 'grid-template-columns: auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto'
+    generate_grid()
+})
+resolution_40_button.addEventListener('click', ()=>{
+    resolution_40_button.style = 'background-color: rgb(200,200,200); color: black;'
+    resolution_20_button.style = ''
+    resolution = 40
+    grid.style = 'grid-template-columns: auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto'
+    generate_grid()
 })
 
 
@@ -325,9 +356,10 @@ grid.addEventListener('mouseup', ()=>{
 })
 
 
-setInterval(move_mouse_drag_point_position, 100)
+setInterval(move_mouse_drag_point_position, 50)
 function move_mouse_drag_point_position(){
     if(!mouse_down_on_grid){
+        mouse_drag_point_visualizer_element.style = 'display: none;'
         return
     }
     mouse_drag_point_velocity.x = (mouse_position_on_grid.x - mouse_drag_point_position.x) / 4
@@ -335,11 +367,13 @@ function move_mouse_drag_point_position(){
     mouse_drag_point_position.x += mouse_drag_point_velocity.x
     mouse_drag_point_position.y += mouse_drag_point_velocity.y
 
-    const mouse_drag_point_position_in_game = {x:mouse_drag_point_position.x / 40 + global_coordinate_offset.x, y:mouse_drag_point_position.y / 40 + global_coordinate_offset.y}
+    const mouse_drag_point_position_in_game = {x:mouse_drag_point_position.x / (800 / resolution) + global_coordinate_offset.x, y:mouse_drag_point_position.y / (800 / resolution) + global_coordinate_offset.y}
 
     add_force(time, (Math.abs(mouse_drag_point_velocity.x) + Math.abs(mouse_drag_point_velocity.y)) / 50, mouse_drag_point_position_in_game.x, mouse_drag_point_position_in_game.y, mouse_drag_point_velocity.x, mouse_drag_point_velocity.y)
 
     //console.log('total velocity', (Math.abs(mouse_drag_point_velocity.x) + Math.abs(mouse_drag_point_velocity.y)) / 50, 'position', mouse_drag_point_position_in_game.x, mouse_drag_point_position_in_game.y)
+
+    mouse_drag_point_visualizer_element.style = 'top: '+mouse_drag_point_position.y+'px; left: '+mouse_drag_point_position.x+'px;'
 }
 
 
