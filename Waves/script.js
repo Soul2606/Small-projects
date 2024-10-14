@@ -9,6 +9,7 @@ const debug_step_button = document.getElementById('debug-step')
 const debug_add_force_button = document.getElementById('debug-add-force')
 const debug_add_force_left_button = document.getElementById('debug-add-force-left')
 const debug_add_force_right_button = document.getElementById('debug-add-force-right')
+const add_oscillator_button = document.getElementById('add-oscillator')
 const resolution_20_button = document.getElementById('resolution-20')
 const resolution_40_button = document.getElementById('resolution-40')
 const debug_time = document.getElementById('time')
@@ -27,6 +28,7 @@ let resolution = 20
 
 const arrows = []
 const force_log = []
+const force_mechanism_log = []
 const max_force_log_length = 100
 
 const global_coordinate_offset = {x:0,y:0}
@@ -81,6 +83,35 @@ function generate_grid(){
     }
 }
 generate_grid()
+
+
+
+
+class Force{
+    constructor(x, y, velocityX, velocityY, time, scale){
+        this.x = x
+        this.y = y
+        this.velocityX = velocityX
+        this.velocityY = velocityY
+        this.time = time
+        this.scale = scale
+    }
+}
+
+
+
+
+class Oscillator{
+    constructor(scale, angle, frequency, start_phase, position_x, position_y, time_when_spawned){
+        this.scale = scale
+        this.angle = angle
+        this.frequency = frequency
+        this.start_phase = start_phase  
+        this.position_x = position_x
+        this.position_y = position_y
+        this.time_when_spawned = time_when_spawned
+    }
+}
 
 
 
@@ -147,6 +178,12 @@ class Vector2D {
         return this.angle(vector) / Math.PI
     }
 
+    set_vector_from_degrees(angle_degree){
+        const radians = angle_degree * (Math.PI / 180)
+        this.x = Math.cos(radians)
+        this.y = Math.sin(radians)
+    }
+
 }
 
 
@@ -205,7 +242,7 @@ function set_arrow_direction(arrow, direction_degree, scale){
 
 function add_force(time_when_applied, scale, x, y, velocityX, velocityY){
 
-    force_log.push({time:time_when_applied, scale:scale, x:x, y:y, velocityX:velocityX, velocityY:velocityY})
+    force_log.push(new Force(x, y, velocityX, velocityY, time_when_applied, scale))
     if(force_log.length > max_force_log_length){
         force_log.shift()
     }
@@ -296,6 +333,9 @@ debug_add_force_left_button.addEventListener('click',()=>{
 })
 debug_add_force_right_button.addEventListener('click',()=>{
     add_force(time, 2, 0, 0, 1, 0)
+})
+add_oscillator_button.addEventListener('click', ()=>{
+    force_mechanism_log.push(new Oscillator(1, 90, 1, 0, 0, 0, time))
 })
 
 
@@ -395,32 +435,39 @@ function main() {
     
     for (let i = 0; i < arrows.length; i++) {
         const arrow = arrows[i]
+        const arrow_position = get_arrow_position(i)
         let force_scale = 0
         let force_direction = new Vector2D(0,0)
-        let distance_and_time_influence_from_each_force = []
         
         for (let j = 0; j < force_log.length; j++) {
             const force = force_log[j];
 
-            if(force == 0 || force == undefined || force == '' || force == {}){continue}
+            if(!force instanceof Force){continue}
 
-            const arrow_position = get_arrow_position(i)
-            const arrow_distance_to_force = Math.sqrt((arrow_position.x - force.x) ** 2 + (arrow_position.y - force.y) ** 2)
-            const scale_by_distance_and_time = relu((force.scale - Math.abs(force.time - time + arrow_distance_to_force)))
-            let velocity_angle_difference = 1 - (new Vector2D(arrow_position.x - force.x, arrow_position.y - force.y).angle_sim(new Vector2D(force.velocityX, force.velocityY)))
-            velocity_angle_difference = isNaN(velocity_angle_difference)? 0: velocity_angle_difference
-            force_scale += scale_by_distance_and_time * velocity_angle_difference
+            const results = get_force_data_from_arrow_position(arrow_position, force)
+            force_scale += results.scale
+            force_direction.add(results.direction)
+        }
 
-            distance_and_time_influence_from_each_force.push(scale_by_distance_and_time)
+        for (let i = 0; i < force_mechanism_log.length; i++) {
+            const force_mechanism = force_mechanism_log[i];
             
-            let velocity_direction = new Vector2D(force.velocityX, -force.velocityY)
-            if(velocity_direction.is_NaN()){
-                velocity_direction.x = 0
-                velocity_direction.y = 0
-            }
-            velocity_direction.normalize()
-            velocity_direction.multiply(scale_by_distance_and_time)
-            force_direction.add(velocity_direction)
+            if(!force_mechanism instanceof Oscillator){continue}
+
+            const arrow_distance_to_force = Math.sqrt((arrow_position.x - force_mechanism.position_x) ** 2 + (arrow_position.y - force_mechanism.position_y) ** 2)
+
+            const oscillator_sine_wave = Math.sin(force_mechanism.start_phase + time - arrow_distance_to_force)
+            const oscillator_cosine_wave = Math.cos(force_mechanism.start_phase + time - arrow_distance_to_force)
+            const oscillator_velocity = new Vector2D(0,0)
+            oscillator_velocity.set_vector_from_degrees(oscillator_cosine_wave > 0? force_mechanism.angle + 180: force_mechanism.angle - 180)
+            oscillator_velocity.multiply(oscillator_cosine_wave)
+            
+            const force = new Force(force_mechanism.position_x, force_mechanism.position_y, oscillator_velocity.x, oscillator_velocity.y, null, force_mechanism.scale * Math.abs(oscillator_cosine_wave))
+
+            const results = get_force_data_from_arrow_position(arrow_position, force, true)
+            console.log(results.scale, results.direction, oscillator_velocity)
+            force_scale += results.scale
+            force_direction.add(results.direction)
         }
         set_arrow_direction(arrow, force_direction.angle() * 180 / Math.PI, force_scale)
 
@@ -428,7 +475,25 @@ function main() {
         document.getElementById('debug-arrow-info'+i).textContent = 'a:'+(force_direction.angle()*180/Math.PI).toFixed(1)+' s:'+force_scale.toFixed(1)
         
         if(arrow === debug_selected_arrow){
-            update_force_log(force_log, distance_and_time_influence_from_each_force)
+            update_force_log(force_log)
         }
+    }
+
+    function get_force_data_from_arrow_position(arrow_position, force, ignore_time) {
+        const arrow_distance_to_force = Math.sqrt((arrow_position.x - force.x) ** 2 + (arrow_position.y - force.y) ** 2)
+        const scale_by_distance_and_time = ignore_time? 1: relu((force.scale - Math.abs(force.time - time + arrow_distance_to_force)))
+        let velocity_angle_difference = 1 - (new Vector2D(arrow_position.x - force.x, arrow_position.y - force.y).angle_sim(new Vector2D(force.velocityX, force.velocityY)))
+        velocity_angle_difference = isNaN(velocity_angle_difference) ? 0 : velocity_angle_difference
+        const force_scale = scale_by_distance_and_time * velocity_angle_difference
+
+        let force_direction = new Vector2D(force.velocityX, -force.velocityY)
+        if (force_direction.is_NaN()) {
+            force_direction.x = 0
+            force_direction.y = 0
+        }
+        force_direction.normalize()
+        force_direction.multiply(scale_by_distance_and_time)
+        
+        return {scale:force_scale, direction:force_direction}
     }
 }
