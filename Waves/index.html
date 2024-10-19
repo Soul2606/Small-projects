@@ -21,6 +21,11 @@
             <button class="mode-select-button" id="resolution-20" style="background-color: rgb(200,200,200); color: black;">20*20</button>
             <button class="mode-select-button" id="resolution-40">40*40</button>
         </div>
+        <div class="mode-select-container">
+            <h3 style="margin: 0 5px; align-self: center;">Menu</h3>
+            <button class="mode-select-button" id="show-tools-menu-button" style="background-color: rgb(200,200,200); color: black;">Tools</button>
+            <button class="mode-select-button" id="show-objects-menu-button">Objects</button>
+        </div>
     </header>
     <div class="flex" style="width: fit-content;">
         <div style="position: relative;">
@@ -29,7 +34,8 @@
             </div>
             <div class="mouse-drag-point-visualizer" id="mouse-drag-point-visualizer" style="top: 0; left: 0;"></div>
         </div>
-        <div class="menu">
+        <div class="menu" id="tools-menu">
+            <h3>Tools</h3>
             <h4>Time</h4>
             <button id="debug-pause">pause</button>
             <button id="debug-play">play</button>
@@ -67,6 +73,10 @@
             <h5>Debug</h5>
             <button id="debug-show">show</button>
             <button id="debug-hide">hide</button>
+        </div>
+        <div class="menu" id="objects-menu" style="display: none;">
+            <h3>Objects</h3>
+            <!--Stuff injected bu js-->
         </div>
         <div class="debug" style="display: none;">
             <p style="text-wrap: nowrap;">Force log</p>

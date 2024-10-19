@@ -1,5 +1,7 @@
 
 const grid = document.getElementById('grid')
+const tools_menu = document.getElementById('tools-menu')
+const objects_menu = document.getElementById('objects-menu')
 const debug_force_log = document.getElementById('force-log')
 const debug_show_button = document.getElementById('debug-show')
 const debug_hide_button = document.getElementById('debug-hide')
@@ -12,6 +14,8 @@ const debug_add_force_right_button = document.getElementById('debug-add-force-ri
 const add_oscillator_button = document.getElementById('add-oscillator')
 const resolution_20_button = document.getElementById('resolution-20')
 const resolution_40_button = document.getElementById('resolution-40')
+const show_tools_menu_button = document.getElementById('show-tools-menu-button')
+const show_objects_menu_button = document.getElementById('show-objects-menu-button')
 const debug_time = document.getElementById('time')
 const debug_coordinates = document.getElementById('coordinates')
 const simulation_speed_slider = document.getElementById('simulation-speed-slider')
@@ -303,6 +307,20 @@ resolution_40_button.addEventListener('click', ()=>{
     resolution = 40
     grid.style = 'grid-template-columns: auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto auto'
     generate_grid()
+})
+
+
+show_tools_menu_button.addEventListener('click', ()=>{
+    show_tools_menu_button.style = 'background-color: rgb(200,200,200); color: black;'
+    show_objects_menu_button.style = ''
+    tools_menu.style = 'display: block;'
+    objects_menu.style = 'display: none;'
+})
+show_objects_menu_button.addEventListener('click', ()=>{
+    show_objects_menu_button.style = 'background-color: rgb(200,200,200); color: black;'
+    show_tools_menu_button.style = ''
+    objects_menu.style = 'display: block;'
+    tools_menu.style = 'display: none;'
 })
 
 
