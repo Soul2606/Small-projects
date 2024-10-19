@@ -2,6 +2,7 @@
 const grid = document.getElementById('grid')
 const tools_menu = document.getElementById('tools-menu')
 const objects_menu = document.getElementById('objects-menu')
+const objects_list = document.getElementById('objects-list')
 const debug_force_log = document.getElementById('force-log')
 const debug_show_button = document.getElementById('debug-show')
 const debug_hide_button = document.getElementById('debug-hide')
@@ -170,11 +171,15 @@ class Vector2D {
         return this.x * vector.x + this.y * vector.y
     }
 
-    angle(vector){
-        if(vector === undefined){
+    angle(value){
+        if(value === undefined){
             return Math.atan2(this.x, this.y)
+        }else if(typeof value === 'number'){
+            const radians = angle_degree * (Math.PI / 180)
+            this.x = Math.cos(radians)
+            this.y = Math.sin(radians)
         }else{
-            return Math.acos(this.dot(vector) / (this.magnitude() * vector.magnitude()))
+            return Math.acos(this.dot(value) / (this.magnitude() * value.magnitude()))
         }
     }
 
@@ -222,7 +227,7 @@ function get_arrow_position(arrow_index){
     if(arrow_index > resolution*resolution || arrow_index < 0){
         return null
     }
-    return {x:arrow_index%resolution + global_coordinate_offset.x, y:Math.floor(arrow_index/resolution) + global_coordinate_offset.y}
+    return {x:arrow_index%resolution + global_coordinate_offset.x, y:0 - Math.floor(arrow_index/resolution) + global_coordinate_offset.y}
 }
 
 
@@ -268,6 +273,39 @@ function update_force_log(log, influences){
             force_info_element.textContent += ' | dt-inf:' + influences[influences.length - i - 1].toFixed(1)
         }
         debug_force_log.appendChild(force_info_element)
+    }
+}
+
+
+
+
+function update_objects_list(){
+    remove_all_children(objects_list)
+    for (let i = 0; i < force_mechanism_log.length; i++) {
+        const element = force_mechanism_log[i];
+        if (!element instanceof Oscillator) {
+            console.warn(element,'is not an instance of Oscillator')
+            continue
+        }
+
+        const root = document.createElement('div')
+
+        const info = document.createElement('p')
+        info.textContent = 's:' + element.scale + ' | a:' + element.angle + ' | f:' + element.frequency + ' | sph:' + element.start_phase + ' | x:' + element.position_x + ' | y:' + element.position_y + ' | t:' + element.time_when_spawned.toFixed(1)
+        root.appendChild(info)
+
+        const delete_button = document.createElement('button')
+        delete_button.textContent = 'Remove'
+        delete_button.addEventListener('click', ()=>{
+            const index = force_mechanism_log.findIndex(item => item === element)
+            if (index !== -1) {
+                force_mechanism_log.splice(index,1)
+            }
+            root.remove()
+        })
+        root.appendChild(delete_button)
+
+        objects_list.appendChild(root)
     }
 }
 
@@ -354,11 +392,12 @@ debug_add_force_right_button.addEventListener('click',()=>{
 })
 add_oscillator_button.addEventListener('click', ()=>{
     force_mechanism_log.push(new Oscillator(1, 90, 1, 0, 0, 0, time))
+    update_objects_list()
 })
 
 
 move_up_button.addEventListener('click',()=>{
-    global_coordinate_offset.y -= 1
+    global_coordinate_offset.y += 1
     debug_coordinates.textContent = 'x'+global_coordinate_offset.x+' y'+global_coordinate_offset.y
 })
 move_left_button.addEventListener('click',()=>{
@@ -366,7 +405,7 @@ move_left_button.addEventListener('click',()=>{
     debug_coordinates.textContent = 'x'+global_coordinate_offset.x+' y'+global_coordinate_offset.y
 })
 move_down_button.addEventListener('click',()=>{
-    global_coordinate_offset.y += 1
+    global_coordinate_offset.y -= 1
     debug_coordinates.textContent = 'x'+global_coordinate_offset.x+' y'+global_coordinate_offset.y
 })
 move_right_button.addEventListener('click',()=>{
@@ -399,7 +438,6 @@ grid.addEventListener('mousemove', (e)=>{
 
 
 grid.addEventListener('mousedown', (e)=>{
-    if(debug_show_grid_info_enabled){return}
     e.preventDefault()
     mouse_drag_point_position.x = mouse_position_on_grid.x
     mouse_drag_point_position.y = mouse_position_on_grid.y
@@ -425,9 +463,9 @@ function move_mouse_drag_point_position(){
     mouse_drag_point_position.x += mouse_drag_point_velocity.x
     mouse_drag_point_position.y += mouse_drag_point_velocity.y
 
-    const mouse_drag_point_position_in_game = {x:mouse_drag_point_position.x / (800 / resolution) + global_coordinate_offset.x, y:mouse_drag_point_position.y / (800 / resolution) + global_coordinate_offset.y}
+    const mouse_drag_point_position_in_game = {x:mouse_drag_point_position.x / (800 / resolution) + global_coordinate_offset.x, y:mouse_drag_point_position.y / (800 / resolution) - global_coordinate_offset.y}
 
-    add_force(time, (Math.abs(mouse_drag_point_velocity.x) + Math.abs(mouse_drag_point_velocity.y)) / 50, mouse_drag_point_position_in_game.x, mouse_drag_point_position_in_game.y, mouse_drag_point_velocity.x, mouse_drag_point_velocity.y)
+    add_force(time, (Math.abs(mouse_drag_point_velocity.x) + Math.abs(mouse_drag_point_velocity.y)) / 50, mouse_drag_point_position_in_game.x, -mouse_drag_point_position_in_game.y, mouse_drag_point_velocity.x, 0-mouse_drag_point_velocity.y)
 
     //console.log('total velocity', (Math.abs(mouse_drag_point_velocity.x) + Math.abs(mouse_drag_point_velocity.y)) / 50, 'position', mouse_drag_point_position_in_game.x, mouse_drag_point_position_in_game.y)
 
@@ -474,23 +512,25 @@ function main() {
 
             const arrow_distance_to_force = Math.sqrt((arrow_position.x - force_mechanism.position_x) ** 2 + (arrow_position.y - force_mechanism.position_y) ** 2)
 
-            const oscillator_sine_wave = Math.sin(force_mechanism.start_phase + time - arrow_distance_to_force)
             const oscillator_cosine_wave = Math.cos(force_mechanism.start_phase + time - arrow_distance_to_force)
             const oscillator_velocity = new Vector2D(0,0)
-            oscillator_velocity.set_vector_from_degrees(oscillator_cosine_wave > 0? force_mechanism.angle + 180: force_mechanism.angle - 180)
-            oscillator_velocity.multiply(oscillator_cosine_wave)
+            const angle = oscillator_cosine_wave > 0? force_mechanism.angle + 90: force_mechanism.angle - 90
+            oscillator_velocity.set_vector_from_degrees(angle)
+            oscillator_velocity.multiply(Math.abs(oscillator_cosine_wave))
             
-            const force = new Force(force_mechanism.position_x, force_mechanism.position_y, oscillator_velocity.x, oscillator_velocity.y, null, force_mechanism.scale * Math.abs(oscillator_cosine_wave))
+            
+            const force = new Force(force_mechanism.position_x, force_mechanism.position_y, oscillator_velocity.x, oscillator_velocity.y, null, force_mechanism.scale * Math.abs(oscillator_cosine_wave) / arrow_distance_to_force)
+
+
 
             const results = get_force_data_from_arrow_position(arrow_position, force, true)
-            console.log(results.scale, results.direction, oscillator_velocity)
             force_scale += results.scale
             force_direction.add(results.direction)
         }
         set_arrow_direction(arrow, force_direction.angle() * 180 / Math.PI, force_scale)
 
         //Debug stuff
-        document.getElementById('debug-arrow-info'+i).textContent = 'a:'+(force_direction.angle()*180/Math.PI).toFixed(1)+' s:'+force_scale.toFixed(1)
+        document.getElementById('debug-arrow-info'+i).textContent = 'x:'+(arrow_position.x)+' y:'+arrow_position.y
         
         if(arrow === debug_selected_arrow){
             update_force_log(force_log)
@@ -499,12 +539,12 @@ function main() {
 
     function get_force_data_from_arrow_position(arrow_position, force, ignore_time) {
         const arrow_distance_to_force = Math.sqrt((arrow_position.x - force.x) ** 2 + (arrow_position.y - force.y) ** 2)
-        const scale_by_distance_and_time = ignore_time? 1: relu((force.scale - Math.abs(force.time - time + arrow_distance_to_force)))
+        const scale_by_distance_and_time = relu((force.scale - Math.abs(force.time - time + arrow_distance_to_force)))
         let velocity_angle_difference = 1 - (new Vector2D(arrow_position.x - force.x, arrow_position.y - force.y).angle_sim(new Vector2D(force.velocityX, force.velocityY)))
         velocity_angle_difference = isNaN(velocity_angle_difference) ? 0 : velocity_angle_difference
-        const force_scale = scale_by_distance_and_time * velocity_angle_difference
+        const force_scale = (ignore_time? 1: scale_by_distance_and_time) * velocity_angle_difference
 
-        let force_direction = new Vector2D(force.velocityX, -force.velocityY)
+        let force_direction = new Vector2D(force.velocityX, force.velocityY)
         if (force_direction.is_NaN()) {
             force_direction.x = 0
             force_direction.y = 0

@@ -43,6 +43,8 @@ header{
 .debug-arrow-info{
     margin: 0;
     position: absolute;
+    pointer-events: none;
+    font-size: x-small;
 }
 
 .debug-arrow-number{
