@@ -123,26 +123,34 @@ class Vector2D {
         if (x instanceof Vector2D) {
             this.x = x.x
             this.y = x.y
-        }else{   
+        }else if(y === undefined){
+            const radians = x * (Math.PI / 180)
+            this.x = Math.cos(radians)
+            this.y = Math.sin(radians)
+        }else{
             this.x = x
             this.y = y
         }
     }
 
-    clone(vector){
-        this.x = vector.x
-        this.y = vector.y
+    clone(){
+        return new Vector2D(this.x, this.y)
     }
 
     is_NaN(){
         return isNaN(this.x) || isNaN(this.y)
     }
 
+    print(){
+        return [this.x.toFixed(1), this.y.toFixed(1)]
+    }
+
     add(value) {
         if(value instanceof Vector2D){
             this.x += value.x
             this.y += value.y
-        }    
+        }
+        return this  
     }
 
     multiply(value) {
@@ -153,13 +161,15 @@ class Vector2D {
             this.x *= value
             this.y *= value
         }
+        return this
     }
 
-    subtract(value) {
+    divide(value) {
         if(value instanceof Vector2D){
             this.x /= value.x
             this.y /= value.y
-        }    
+        }
+        return this   
     }
 
     magnitude(){
@@ -172,6 +182,7 @@ class Vector2D {
             this.x /= magnitude
             this.y /= magnitude
         }
+        return this
     }
 
     dot(vector){
@@ -180,24 +191,19 @@ class Vector2D {
 
     angle(value){
         if(value === undefined){
-            return Math.atan2(this.y, this.x)
+            return Math.atan2(this.y, this.x) / (Math.PI / 180)
         }else if(typeof value === 'number'){
-            const radians = angle_degree * (Math.PI / 180)
+            const radians = value * (Math.PI / 180)
             this.x = Math.cos(radians)
             this.y = Math.sin(radians)
+            return this
         }else if(value instanceof Vector2D){
-            return Math.acos(this.dot(value) / (this.magnitude() * value.magnitude()))
+            return Math.acos(this.dot(value) / (this.magnitude() * value.magnitude())) / (Math.PI / 180)
         }
     }
 
     angle_sim(vector){
-        return this.angle(vector) / Math.PI
-    }
-
-    set_vector_from_degrees(angle_degree){
-        const radians = angle_degree * (Math.PI / 180)
-        this.x = Math.cos(radians)
-        this.y = Math.sin(radians)
+        return this.angle(vector) / 180
     }
 
 }
@@ -249,7 +255,7 @@ function softsign(x){
 
 function set_arrow_direction(arrow, direction_degree, scale){
 
-    arrow.style.transform = 'rotate('+(direction_degree + 90 + 45)+'deg) scale('+(softsign(scale/2)*3)+')'
+    arrow.style.transform = 'rotate('+(-direction_degree - 90 + 45)+'deg) scale('+(softsign(scale/2)*3)+')'
 
 }
 
@@ -263,6 +269,7 @@ function add_force(time_when_applied, scale, x, y, velocityX, velocityY){
         force_log.shift()
     }
 
+    //Debug stuff
     update_force_log(force_log)
 }
 
@@ -504,6 +511,8 @@ function main() {
         let force_scale = 0
         let force_direction = new Vector2D(0,0)
         
+
+
         for (let j = 0; j < force_log.length; j++) {
             const force = force_log[j];
 
@@ -514,8 +523,10 @@ function main() {
             force_direction.add(results.direction)
         }
 
-        for (let i = 0; i < force_mechanism_log.length; i++) {
-            const force_mechanism = force_mechanism_log[i];
+
+
+        for (let j = 0; j < force_mechanism_log.length; j++) {
+            const force_mechanism = force_mechanism_log[j];
             
             if(!force_mechanism instanceof Oscillator){continue}
 
@@ -524,19 +535,26 @@ function main() {
             const oscillator_cosine_wave = Math.cos(force_mechanism.start_phase + time - arrow_distance_to_force)
             const oscillator_velocity = new Vector2D(0,0)
             const angle = oscillator_cosine_wave > 0? force_mechanism.angle + 90: force_mechanism.angle - 90
-            oscillator_velocity.set_vector_from_degrees(angle)
+            oscillator_velocity.angle(angle)
             oscillator_velocity.multiply(Math.abs(oscillator_cosine_wave))
             
             
             const force = new Force(new Vector2D(force_mechanism.position.x, force_mechanism.position.y), oscillator_velocity, null, force_mechanism.scale * Math.abs(oscillator_cosine_wave) / arrow_distance_to_force)
-
-
+            
 
             const results = get_force_data_from_arrow_position(arrow_position, force, true)
             force_scale += results.scale
             force_direction.add(results.direction)
         }
-        set_arrow_direction(arrow, force_direction.angle() * 180 / Math.PI, force_scale)
+
+
+
+        // *'*'*'*'*'*'*'*'*'*'*'*'*'*'*'*'*'*'
+        set_arrow_direction(arrow, force_direction.angle(), force_scale)
+        // *'*'*'*'*'*'*'*'*'*'*'*'*'*'*'*'*'*'
+
+
+
 
         //Debug stuff
         document.getElementById('debug-arrow-info'+i).textContent = 'x:'+(arrow_position.x)+' y:'+arrow_position.y
@@ -559,7 +577,9 @@ function main() {
             force_direction.y = 0
         }
         force_direction.normalize()
-        force_direction.multiply(scale_by_distance_and_time)
+        if (!ignore_time) {
+            force_direction.multiply(scale_by_distance_and_time)
+        }
         
         return {scale:force_scale, direction:force_direction}
     }
