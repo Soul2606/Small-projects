@@ -44,7 +44,7 @@ header{
     margin: 0;
     position: absolute;
     pointer-events: none;
-    font-size: x-small;
+    font-size: xx-small;
 }
 
 .debug-arrow-number{

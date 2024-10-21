@@ -93,11 +93,9 @@ generate_grid()
 
 
 class Force{
-    constructor(x, y, velocityX, velocityY, time, scale){
-        this.x = x
-        this.y = y
-        this.velocityX = velocityX
-        this.velocityY = velocityY
+    constructor(position, velocity, time, scale){
+        this.position = position
+        this.velocity = velocity
         this.time = time
         this.scale = scale
     }
@@ -107,13 +105,12 @@ class Force{
 
 
 class Oscillator{
-    constructor(scale, angle, frequency, start_phase, position_x, position_y, time_when_spawned){
+    constructor(scale, angle, frequency, start_phase, position, time_when_spawned){
         this.scale = scale
         this.angle = angle
         this.frequency = frequency
         this.start_phase = start_phase  
-        this.position_x = position_x
-        this.position_y = position_y
+        this.position = position
         this.time_when_spawned = time_when_spawned
     }
 }
@@ -123,8 +120,18 @@ class Oscillator{
 
 class Vector2D {
     constructor(x, y) {
-        this.x = x
-        this.y = y
+        if (x instanceof Vector2D) {
+            this.x = x.x
+            this.y = x.y
+        }else{   
+            this.x = x
+            this.y = y
+        }
+    }
+
+    clone(vector){
+        this.x = vector.x
+        this.y = vector.y
     }
 
     is_NaN(){
@@ -173,12 +180,12 @@ class Vector2D {
 
     angle(value){
         if(value === undefined){
-            return Math.atan2(this.x, this.y)
+            return Math.atan2(this.y, this.x)
         }else if(typeof value === 'number'){
             const radians = angle_degree * (Math.PI / 180)
             this.x = Math.cos(radians)
             this.y = Math.sin(radians)
-        }else{
+        }else if(value instanceof Vector2D){
             return Math.acos(this.dot(value) / (this.magnitude() * value.magnitude()))
         }
     }
@@ -242,7 +249,7 @@ function softsign(x){
 
 function set_arrow_direction(arrow, direction_degree, scale){
 
-    arrow.style.transform = 'rotate('+(direction_degree + 45 + 180)+'deg) scale('+(softsign(scale/2)*3)+')'
+    arrow.style.transform = 'rotate('+(direction_degree + 90 + 45)+'deg) scale('+(softsign(scale/2)*3)+')'
 
 }
 
@@ -251,7 +258,7 @@ function set_arrow_direction(arrow, direction_degree, scale){
 
 function add_force(time_when_applied, scale, x, y, velocityX, velocityY){
 
-    force_log.push(new Force(x, y, velocityX, velocityY, time_when_applied, scale))
+    force_log.push(new Force(new Vector2D(x, y), new Vector2D(velocityX, velocityY), time_when_applied, scale))
     if(force_log.length > max_force_log_length){
         force_log.shift()
     }
@@ -267,8 +274,10 @@ function update_force_log(log, influences){
     for (let i = 0; i < log.length; i++) {
         const force = log[log.length - i - 1];
         
+        const velocity = new Vector2D(force.velocity.x, force.velocity.y)
+        const direction = velocity.angle() * 180 / Math.PI
         const force_info_element = document.createElement('p')
-        force_info_element.textContent = 't:' + force.time.toFixed(1) + ' | s:' + force.scale.toFixed(1) + ' | pos:' + force.x.toFixed(1) + ',' + force.y.toFixed(1) + ' | vel:' + force.velocityX.toFixed(1) + ',' + force.velocityY.toFixed(1)
+        force_info_element.textContent = 't:' + force.time.toFixed(1) + ' | s:' + force.scale.toFixed(1) + ' | pos:' + force.position.x.toFixed(1) + ',' + force.position.y.toFixed(1) + ' | vel:' + force.velocity.x.toFixed(1) + ',' + force.velocity.y.toFixed(1) + ' |dir' + direction.toFixed(1)
         if(influences !== undefined){
             force_info_element.textContent += ' | dt-inf:' + influences[influences.length - i - 1].toFixed(1)
         }
@@ -291,7 +300,7 @@ function update_objects_list(){
         const root = document.createElement('div')
 
         const info = document.createElement('p')
-        info.textContent = 's:' + element.scale + ' | a:' + element.angle + ' | f:' + element.frequency + ' | sph:' + element.start_phase + ' | x:' + element.position_x + ' | y:' + element.position_y + ' | t:' + element.time_when_spawned.toFixed(1)
+        info.textContent = 's:' + element.scale + ' | a:' + element.angle + ' | f:' + element.frequency + ' | sph:' + element.start_phase + ' | x:' + element.position.x + ' | y:' + element.position.y + ' | t:' + element.time_when_spawned.toFixed(1)
         root.appendChild(info)
 
         const delete_button = document.createElement('button')
@@ -391,7 +400,7 @@ debug_add_force_right_button.addEventListener('click',()=>{
     add_force(time, 2, 0, 0, 1, 0)
 })
 add_oscillator_button.addEventListener('click', ()=>{
-    force_mechanism_log.push(new Oscillator(1, 90, 1, 0, 0, 0, time))
+    force_mechanism_log.push(new Oscillator(1, 90, 1, 0, new Vector2D(0,0), time))
     update_objects_list()
 })
 
@@ -510,7 +519,7 @@ function main() {
             
             if(!force_mechanism instanceof Oscillator){continue}
 
-            const arrow_distance_to_force = Math.sqrt((arrow_position.x - force_mechanism.position_x) ** 2 + (arrow_position.y - force_mechanism.position_y) ** 2)
+            const arrow_distance_to_force = Math.sqrt((arrow_position.x - force_mechanism.position.x) ** 2 + (arrow_position.y - force_mechanism.position.y) ** 2)
 
             const oscillator_cosine_wave = Math.cos(force_mechanism.start_phase + time - arrow_distance_to_force)
             const oscillator_velocity = new Vector2D(0,0)
@@ -519,7 +528,7 @@ function main() {
             oscillator_velocity.multiply(Math.abs(oscillator_cosine_wave))
             
             
-            const force = new Force(force_mechanism.position_x, force_mechanism.position_y, oscillator_velocity.x, oscillator_velocity.y, null, force_mechanism.scale * Math.abs(oscillator_cosine_wave) / arrow_distance_to_force)
+            const force = new Force(new Vector2D(force_mechanism.position.x, force_mechanism.position.y), oscillator_velocity, null, force_mechanism.scale * Math.abs(oscillator_cosine_wave) / arrow_distance_to_force)
 
 
 
@@ -538,13 +547,13 @@ function main() {
     }
 
     function get_force_data_from_arrow_position(arrow_position, force, ignore_time) {
-        const arrow_distance_to_force = Math.sqrt((arrow_position.x - force.x) ** 2 + (arrow_position.y - force.y) ** 2)
+        const arrow_distance_to_force = Math.sqrt((arrow_position.x - force.position.x) ** 2 + (arrow_position.y - force.position.y) ** 2)
         const scale_by_distance_and_time = relu((force.scale - Math.abs(force.time - time + arrow_distance_to_force)))
-        let velocity_angle_difference = 1 - (new Vector2D(arrow_position.x - force.x, arrow_position.y - force.y).angle_sim(new Vector2D(force.velocityX, force.velocityY)))
+        let velocity_angle_difference = 1 - (new Vector2D(arrow_position.x - force.position.x, arrow_position.y - force.position.y).angle_sim(new Vector2D(force.velocity.x, force.velocity.y)))
         velocity_angle_difference = isNaN(velocity_angle_difference) ? 0 : velocity_angle_difference
         const force_scale = (ignore_time? 1: scale_by_distance_and_time) * velocity_angle_difference
 
-        let force_direction = new Vector2D(force.velocityX, force.velocityY)
+        let force_direction = new Vector2D(force.velocity)
         if (force_direction.is_NaN()) {
             force_direction.x = 0
             force_direction.y = 0
