@@ -310,6 +310,22 @@ function update_objects_list(){
         info.textContent = 's:' + element.scale + ' | a:' + element.angle + ' | f:' + element.frequency + ' | sph:' + element.start_phase + ' | x:' + element.position.x + ' | y:' + element.position.y + ' | t:' + element.time_when_spawned.toFixed(1)
         root.appendChild(info)
 
+        const scale_input = document.createElement('input')
+        scale_input.type = 'number'
+        scale_input.value = element.scale
+        root.appendChild(scale_input)
+
+        const set_scale_button = document.createElement('button')
+        set_scale_button.textContent = 'Set'
+        set_scale_button.addEventListener('click', ()=>{
+            console.log('hi')
+            element.scale = Number(scale_input.value)
+            update_objects_list()
+        })
+        root.appendChild(set_scale_button)
+
+        root.innerHTML += '<br>'
+
         const delete_button = document.createElement('button')
         delete_button.textContent = 'Remove'
         delete_button.addEventListener('click', ()=>{
