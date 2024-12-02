@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body{
+            margin: 0;
+        }
+
+        div{
+            border: solid black 1px;
+        }
+    </style>
+</head>
+<body>
+    <div style="position: sticky; top: 0; height: 100px; background-color: white; z-index: 2;">
+        <p>header</p>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aspernatur impedit et quam enim minima deleniti amet quidem adipisci porro iure earum voluptatem dolorum, ab nemo sequi natus vero, animi numquam?</p>
+    </div>
+    <div style="display: flex;">
+        <div style="height: 200vh; flex-grow: 1;">
+            <p>main</p>
+        </div>
+        <div style="position: relative; width: 750px; border-color: aqua;">
+            <div style="width: 750px; position: fixed; overflow-y: auto; height: 100vh;">
+                <p>side</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae laboriosam nobis quod error quisquam voluptas dolorem illum ab numquam labore itaque eveniet beatae porro ipsum, quasi dolores nulla facilis vero!</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
