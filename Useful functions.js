@@ -117,8 +117,68 @@ function distribute_evenly_within_range(value, ranges){
     return results
 }
 
-console.log(distribute_evenly_within_range(23,[1,4,8,12]))
 
+
+
+for(let i = 0; i < 1000; i++){
+    const results = calculate_optimal_distribution([Math.ceil(i/1),Math.ceil(i/10)],[Math.ceil(i/100),Math.ceil(i/1000)])
+    console.log('resources_consumed', results.resources_consumed, 'demands_fulfilled', results.demands_fulfilled)
+}
+
+function calculate_optimal_distribution(resources, demands) {
+
+    console.groupCollapsed('calculate_optimal_distribution')
+
+    console.log('resources', resources, 'demands', demands)
+
+    function sum(input){
+        let sum = 0;
+        let values = [];
+    
+        if (Array.isArray(input)) {
+            values = input;
+        } else if (typeof input === 'object') {
+            values = Object.values(input);
+        }
+    
+        for (let i = 0; i < values.length; i++) {
+            const element = values[i];
+            sum += element;
+        }
+        return sum;
+    }
+
+    const demands_sum = sum(demands)
+
+    if (demands_sum === 0) {
+        console.groupEnd()
+        return {resources_consumed:resources.map(()=>0), demands_fulfilled:demands.map(()=>0)}
+    }
+
+    console.log('demands_sum', demands_sum)
+
+    const smallest_resource = Math.min(...resources)
+    
+    console.log('smallest_resource', smallest_resource)
+    
+    const resource_per_demand = smallest_resource/demands_sum
+    
+    if (resource_per_demand >= 1) {
+        console.groupEnd()
+        return {resources_consumed:resources.map(()=>demands_sum), demands_fulfilled:Array.from(demands)}
+    }
+
+    console.log('resource_per_demand', resource_per_demand)
+
+    const resources_per_demands = demands.map(resource=>{
+        return resource * resource_per_demand
+    })
+    
+    console.log(resources_per_demands)
+    console.groupEnd()
+    return {resources_consumed:resources.map(()=>smallest_resource), demands_fulfilled:resources_per_demands}
+    
+}
 
 
 
